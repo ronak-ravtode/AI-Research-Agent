@@ -1,0 +1,246 @@
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-13-report.md
+  s_4bf78244dae74e::t_f4048d51e2ea4e 1-24
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-5-report.md
+  s_b9c1fee567ba1a::t_6ab64b32c5965c 1-35
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-18-report.md
+  s_f6b63bd798bd1e::t_6ad1f8fdddef01 1-49
+backend/tests/test_logging.py
+  s_86c66eba6e5fb4::t_f461e3e9bb3883 1-14
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-20-report.md
+  s_186e3fc7405aaa::t_6160f4421ad9ff 1-17
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-12-report.md
+  s_1aa4160bc4449d::t_d83cc9098ff32b 1-29
+backend/app/core/exceptions.py
+  s_86c66eba6e5fb4::t_46ef1df0e77547 1-21
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-15-report.md
+  s_5c23de2909860d::t_0b8c480e175705 1-22
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-21-report.md
+  s_49ed901cc35a7d::t_a7ff4721205098 1-19
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-3-report.md
+  s_21c5c22fd52c03::t_cbc309d746690c 1-47
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-17-report.md
+  s_e77927d2f6110b::t_a819eaa2e2babe 1-23
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-4-report.md
+  s_91220deab9425b::t_f7d6bf4b51bf68 1-47
+backend/app/core/logging.py
+  s_86c66eba6e5fb4::t_a9446540f23045 1-30
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-10-report.md
+  s_159f95a3ebd54b::t_e08777818a47be 1-37
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-7-report.md
+  s_3fabc4e2c247f8::t_a186d97309b92b 1-27
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-8-report.md
+  s_4276b18a68c5c4::t_e6761262b6218f 1-21
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-19-report.md
+  s_60dcd9980d2d13::t_5224e58f246d78 1-29
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-14-report.md
+  s_1b220072abf1f1::t_eb80a8a84be889 1-26
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/progress.md
+  s_eba63eccd66b5b::t_9e233c6c6777af 10
+  s_eba63eccd66b5b::t_20244cef8df3ce 21
+  s_f6b63bd798bd1e::t_f5e7c106d68610 20
+  s_eba63eccd66b5b::t_5772843bef9a59 8
+  s_eba63eccd66b5b::t_8f9f3c52a4dfc7 22
+  s_eba63eccd66b5b::t_c180438ae45605 11
+  s_eba63eccd66b5b::t_75f2d7355e6670 6
+  s_eba63eccd66b5b::t_b43e352bdf9a69 2-3
+  s_eba63eccd66b5b::t_01b30954ab1c90 12
+  s_eba63eccd66b5b::t_293672500a9c72 24
+  s_eba63eccd66b5b::t_9f7fd72d002b67 17
+  s_eba63eccd66b5b::t_62445567477705 4
+  s_eba63eccd66b5b::t_b53869dc2af41e 15
+  s_eba63eccd66b5b::t_c552ed14c84ff2 19
+  s_eba63eccd66b5b::t_bbcb6bd489422e 9
+  s_49ed901cc35a7d::t_4920308bb2a467 23
+  s_eba63eccd66b5b::t_1d6891145ec8ac 5
+  s_eba63eccd66b5b::t_5e9ff4e74d9580 16
+  s_eba63eccd66b5b::t_5d76f75a975a79 7
+  s_eba63eccd66b5b::t_6a8f7d186b97f9 13
+  s_eba63eccd66b5b::t_caad319d335aa9 14
+  s_eba63eccd66b5b::t_8e67cffad7e083 18
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-22-report.md
+  s_86c66eba6e5fb4::t_943e9ee4e35fc9 1-15
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-11-report.md
+  s_29ed75e5bfc979::t_fa510f1da6e81f 1-33
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-16-report.md
+  s_2df264f0b4ce3a::t_cf3b8bc1ad8a40 1-27
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-2-report.md
+  s_1468c2ed72d4ae::t_8e8d00dbf9b0c6 1-37
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-1-report.md
+  s_7156cb0e949696::t_acc4cbc63a2762 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "dd1e1085a9b2d0b37f0f3538d2f1ef6a7c176304",
+  "prompts": {},
+  "sessions": {
+    "s_1468c2ed72d4ae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70e80c4dffePdNN0wr4g4wkFk",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_159f95a3ebd54b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70d1c0c1ffeoHZCdZ8AYXffus",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_186e3fc7405aaa": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70b246c0ffeLjMTTSuLhPadrg",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_1aa4160bc4449d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70cbe33bffemlW5ushfGEd5Ti",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_1b220072abf1f1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70c557ddffeYang9zDacBx2jd",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_21c5c22fd52c03": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70e50b80ffeWmKLF19CapaQdM",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_29ed75e5bfc979": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ce5dbbffe8FLMkq1LNu7VJg",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_2df264f0b4ce3a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70c021d6ffeHUZzuHCfs5NJhY",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_3fabc4e2c247f8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70da654bffeIY31N6ihEyQLYO",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_4276b18a68c5c4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70d61418ffe7e8nrfZPhqK3cR",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_49ed901cc35a7d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70b0f6a3ffeNcRLH3zYFiD1lk",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_4bf78244dae74e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70c87960ffed4XWaeHLRoKWui",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_5c23de2909860d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70c28dbaffePl63kOVqmCS7pG",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_60dcd9980d2d13": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70b489b3ffeUF5ERQPk7ne2yh",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_7156cb0e949696": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ece099ffeTr5LISKe8eTJXM",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_86c66eba6e5fb4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ae9ba2ffeWMrXvXx1NV76F5",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_91220deab9425b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70e24841ffeewqy1oS6uTytQ7",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_b9c1fee567ba1a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70df5cd5ffeLeLab7FdyM89XE",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_e77927d2f6110b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70be8a90ffeo49xUPd81Yzio8",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_eba63eccd66b5b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70f3fbe8ffehAAwxrStS5WEPl",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_f6b63bd798bd1e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70b77decffejiRDTDubcLtMen",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
