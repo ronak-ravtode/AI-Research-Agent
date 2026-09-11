@@ -1,0 +1,21 @@
+backend/tests/test_researcher.py
+  s_159f95a3ebd54b::t_777b5138e378f4 1-41
+backend/app/agents/researcher.py
+  s_159f95a3ebd54b::t_89350299bc76f6 1-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "14d6d3bcf0c3745fb26ce5b65ebced230c486665",
+  "prompts": {},
+  "sessions": {
+    "s_159f95a3ebd54b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70d1c0c1ffeoHZCdZ8AYXffus",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
