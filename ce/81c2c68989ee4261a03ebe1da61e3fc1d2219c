@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-09-11-ai-research-agent-backend-design.md
+  s_eba63eccd66b5b::t_20be4e6e7c11fa 1-224
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ce81c2c68989ee4261a03ebe1da61e3fc1d2219c",
+  "prompts": {},
+  "sessions": {
+    "s_eba63eccd66b5b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70f3fbe8ffehAAwxrStS5WEPl",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
