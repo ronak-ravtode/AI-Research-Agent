@@ -1,0 +1,40 @@
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/progress.md
+  s_eba63eccd66b5b::t_4d8d9bf4b971b0 25
+  s_eba63eccd66b5b::t_7f0e27b4fe15da 26
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-23-report.md
+  s_cfb876b06d9b8a::t_b502fd9cdc7c25 1-20
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-25-report.md
+  s_d9326fe61d84e3::t_061b47e9dfa45f 1-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1b61f915fb6f1106690e0bde12c628aa262bd73d",
+  "prompts": {},
+  "sessions": {
+    "s_cfb876b06d9b8a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ad5bbbffePaXcluRtNgsYcd",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_d9326fe61d84e3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70a6bbbbffetlqq7YLv0gE4BS",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_eba63eccd66b5b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70f3fbe8ffehAAwxrStS5WEPl",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
