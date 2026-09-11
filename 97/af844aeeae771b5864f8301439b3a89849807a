@@ -1,0 +1,33 @@
+backend/tests/test_utils.py
+  s_cfb876b06d9b8a::t_90602d54f85b83 1-21
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/progress.md
+  s_eba63eccd66b5b::t_b42639b061c14c 24
+backend/app/utils/text.py
+  s_cfb876b06d9b8a::t_47ff50fba9d0e3 1-20
+backend/app/utils/url.py
+  s_cfb876b06d9b8a::t_ece2189f5b6847 1-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "97af844aeeae771b5864f8301439b3a89849807a",
+  "prompts": {},
+  "sessions": {
+    "s_cfb876b06d9b8a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ad5bbbffePaXcluRtNgsYcd",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_eba63eccd66b5b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70f3fbe8ffehAAwxrStS5WEPl",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
