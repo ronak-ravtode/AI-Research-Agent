@@ -1,0 +1,21 @@
+backend/app/services/source_quality.py
+  s_4276b18a68c5c4::t_9302dfd91d9151 1-52
+backend/tests/test_source_quality.py
+  s_4276b18a68c5c4::t_4cbf288f1a4ffb 1-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3f8f9340382babfe44128239964aede3ef694724",
+  "prompts": {},
+  "sessions": {
+    "s_4276b18a68c5c4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70d61418ffe7e8nrfZPhqK3cR",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
