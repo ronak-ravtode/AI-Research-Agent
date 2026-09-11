@@ -1,0 +1,21 @@
+backend/tests/test_analyst.py
+  s_1b220072abf1f1::t_defeb7a2735178 1-136
+backend/app/agents/analyst.py
+  s_1b220072abf1f1::t_c26d95c4a8c4b0 1-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "42273af75d6fee6fd0fb310281e2d54b95c33e0d",
+  "prompts": {},
+  "sessions": {
+    "s_1b220072abf1f1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70c557ddffeYang9zDacBx2jd",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
