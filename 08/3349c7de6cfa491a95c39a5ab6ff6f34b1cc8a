@@ -1,0 +1,21 @@
+backend/tests/test_writer.py
+  s_e77927d2f6110b::t_00ef1fa190d72b 1-100
+backend/app/agents/writer.py
+  s_e77927d2f6110b::t_5c0035f46b9d3d 1-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "083349c7de6cfa491a95c39a5ab6ff6f34b1cc8a",
+  "prompts": {},
+  "sessions": {
+    "s_e77927d2f6110b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70be8a90ffeo49xUPd81Yzio8",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
