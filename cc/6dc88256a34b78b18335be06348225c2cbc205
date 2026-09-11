@@ -1,0 +1,21 @@
+backend/app/agents/verifier.py
+  s_1aa4160bc4449d::t_bbca2c5a2b75c9 1-66
+backend/tests/test_verifier.py
+  s_1aa4160bc4449d::t_bb7fcd8a5b7d27 1-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "cc6dc88256a34b78b18335be06348225c2cbc205",
+  "prompts": {},
+  "sessions": {
+    "s_1aa4160bc4449d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70cbe33bffemlW5ushfGEd5Ti",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
