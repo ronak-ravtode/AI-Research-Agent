@@ -1,0 +1,21 @@
+backend/app/agents/extractor.py
+  s_29ed75e5bfc979::t_0213addf8dbfbf 1-66
+backend/tests/test_extractor.py
+  s_29ed75e5bfc979::t_71934b369dd201 1-149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e1eea8aec6ae263b4e90c69f02a358118d8111f3",
+  "prompts": {},
+  "sessions": {
+    "s_29ed75e5bfc979": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ce5dbbffe8FLMkq1LNu7VJg",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
