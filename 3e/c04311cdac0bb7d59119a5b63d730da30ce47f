@@ -1,0 +1,21 @@
+backend/app/services/confidence.py
+  s_4bf78244dae74e::t_1c6286ec0d36a7 1-51
+backend/tests/test_confidence.py
+  s_4bf78244dae74e::t_df05a82b92d6a9 1-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3ec04311cdac0bb7d59119a5b63d730da30ce47f",
+  "prompts": {},
+  "sessions": {
+    "s_4bf78244dae74e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70c87960ffed4XWaeHLRoKWui",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
