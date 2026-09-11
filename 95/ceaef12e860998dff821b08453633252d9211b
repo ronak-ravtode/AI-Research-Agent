@@ -1,0 +1,23 @@
+backend/tests/test_memory.py
+  s_49ed901cc35a7d::t_f9992ff7628b59 1-10
+backend/app/services/embeddings.py
+  s_49ed901cc35a7d::t_ed6bb13a1c519f 1-22
+backend/app/services/memory.py
+  s_49ed901cc35a7d::t_1d4c7a47f27df9 1-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "95ceaef12e860998dff821b08453633252d9211b",
+  "prompts": {},
+  "sessions": {
+    "s_49ed901cc35a7d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70b0f6a3ffeNcRLH3zYFiD1lk",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
