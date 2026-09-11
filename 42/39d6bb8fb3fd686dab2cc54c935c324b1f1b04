@@ -1,0 +1,31 @@
+backend/app/database/__init__.py
+  s_1468c2ed72d4ae::t_5327fb9e4f0332 1
+  s_1468c2ed72d4ae::t_2136311481da62 2-6
+backend/app/database/database.py
+  s_1468c2ed72d4ae::t_c43da6c45a752f 8,11,18-22,30
+  s_1468c2ed72d4ae::t_f7b20dd5d99bff 1-6,9,25-29,32-37
+  s_1468c2ed72d4ae::t_3e6548862ecd12 7,10,12-17,23-24,31
+backend/app/database/models.py
+  s_1468c2ed72d4ae::t_56546d5d7dcb55 1-57,66,68-87,96,98-114,122-146,155,157-172,178-193,200,202-214
+  s_1468c2ed72d4ae::t_dc42bd8a5edc2f 58-65,67,88-95,97,115-121,147-154,156,173-177,194-199,201,215-219
+backend/tests/test_models.py
+  s_1468c2ed72d4ae::t_5ddcf4c31e6320 1-13
+backend/requirements.txt
+  s_1468c2ed72d4ae::t_71be38335b9cd0 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4239d6bb8fb3fd686dab2cc54c935c324b1f1b04",
+  "prompts": {},
+  "sessions": {
+    "s_1468c2ed72d4ae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70e80c4dffePdNN0wr4g4wkFk",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
