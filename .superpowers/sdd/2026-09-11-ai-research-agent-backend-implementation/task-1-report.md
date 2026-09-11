@@ -23,5 +23,5 @@
 - Virtual environment created at `backend/.venv`
 
 ## Commit
-- SHA: pending
+- SHA: 2b8d040
 - Message: "feat: project setup with FastAPI, config, and dependencies"
