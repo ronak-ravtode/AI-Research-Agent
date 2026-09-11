@@ -1,0 +1,27 @@
+backend/app/schemas/report.py
+  s_21c5c22fd52c03::t_b5901250f607f9 1-26
+backend/app/schemas/source.py
+  s_21c5c22fd52c03::t_eb89a993cddab2 1-22
+backend/app/schemas/evidence.py
+  s_21c5c22fd52c03::t_e01372b4417450 1-19
+backend/tests/test_schemas.py
+  s_21c5c22fd52c03::t_d1568f372c082b 1-19
+backend/app/schemas/research.py
+  s_21c5c22fd52c03::t_200e0d244e218b 1-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e020bc6b5e1d4fc6cdec504ce92fbbd9d8253ae4",
+  "prompts": {},
+  "sessions": {
+    "s_21c5c22fd52c03": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70e50b80ffeWmKLF19CapaQdM",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
