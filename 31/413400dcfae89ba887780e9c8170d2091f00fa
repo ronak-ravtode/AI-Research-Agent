@@ -1,0 +1,21 @@
+backend/tests/test_llm.py
+  s_91220deab9425b::t_670539ac9345e6 1-30
+backend/app/services/llm.py
+  s_91220deab9425b::t_c99aba5bb01230 1-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "31413400dcfae89ba887780e9c8170d2091f00fa",
+  "prompts": {},
+  "sessions": {
+    "s_91220deab9425b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70e24841ffeewqy1oS6uTytQ7",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
