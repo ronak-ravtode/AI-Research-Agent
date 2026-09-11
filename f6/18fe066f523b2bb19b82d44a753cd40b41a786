@@ -1,0 +1,22 @@
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-24-report.md
+  s_f10baeae4dd24e::t_434f8c4232992e 1-49
+backend/tests/test_integration.py
+  s_f10baeae4dd24e::t_35949c5a4243e7 1-279,281-282,284-324
+  s_f10baeae4dd24e::t_87ee765f4d449b 280,283
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "f618fe066f523b2bb19b82d44a753cd40b41a786",
+  "prompts": {},
+  "sessions": {
+    "s_f10baeae4dd24e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70aaa41bffeZjhW0vtUmvlv21",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
