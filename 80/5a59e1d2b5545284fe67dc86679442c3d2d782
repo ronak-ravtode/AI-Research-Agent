@@ -1,0 +1,21 @@
+backend/app/agents/conflict_detector.py
+  s_5c23de2909860d::t_3be416f5aefb82 1-49
+backend/tests/test_conflict_detector.py
+  s_5c23de2909860d::t_e85c803442609e 1-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "805a59e1d2b5545284fe67dc86679442c3d2d782",
+  "prompts": {},
+  "sessions": {
+    "s_5c23de2909860d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70c28dbaffePl63kOVqmCS7pG",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
