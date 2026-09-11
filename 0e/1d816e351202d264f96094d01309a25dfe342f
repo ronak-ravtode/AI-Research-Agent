@@ -1,0 +1,19 @@
+docs/superpowers/plans/2026-09-11-ai-research-agent-backend-implementation.md
+  s_eba63eccd66b5b::t_ac3b23e8deda9f 1-3382
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0e1d816e351202d264f96094d01309a25dfe342f",
+  "prompts": {},
+  "sessions": {
+    "s_eba63eccd66b5b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70f3fbe8ffehAAwxrStS5WEPl",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
