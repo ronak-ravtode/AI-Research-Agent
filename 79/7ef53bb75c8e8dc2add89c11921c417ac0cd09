@@ -1,0 +1,33 @@
+backend/app/api/research.py
+  s_60dcd9980d2d13::t_db7f1a37ff0b02 1-20
+backend/tests/test_api.py
+  s_60dcd9980d2d13::t_ba84ecdc08ad90 22-26
+  s_60dcd9980d2d13::t_335e550384778e 1,3-4,6-17
+  s_60dcd9980d2d13::t_5a098071128d4b 2,5,18-21,27-33
+backend/app/api/sources.py
+  s_60dcd9980d2d13::t_61b7660808321f 1-27
+backend/app/api/history.py
+  s_60dcd9980d2d13::t_2c2335b9e85c66 1-26
+backend/app/api/health.py
+  s_60dcd9980d2d13::t_17526b8cd671db 1-8
+backend/app/api/reports.py
+  s_60dcd9980d2d13::t_725102088dcd66 1-23
+backend/app/main.py
+  s_60dcd9980d2d13::t_f6e6b2022dd4a4 1-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "797ef53bb75c8e8dc2add89c11921c417ac0cd09",
+  "prompts": {},
+  "sessions": {
+    "s_60dcd9980d2d13": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70b489b3ffeUF5ERQPk7ne2yh",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
