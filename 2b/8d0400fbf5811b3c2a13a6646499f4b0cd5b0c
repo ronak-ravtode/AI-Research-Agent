@@ -1,0 +1,42 @@
+backend/.gitignore
+  s_7156cb0e949696::t_faf20b34b7df26 1-11
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/progress.md
+  s_eba63eccd66b5b::t_01b254532d5b1d 1
+backend/tests/conftest.py
+  s_7156cb0e949696::t_5fef6442517f6f 1-12
+backend/.env.example
+  s_7156cb0e949696::t_759ac412e8788c 1-13
+backend/requirements.txt
+  s_7156cb0e949696::t_01cdb21f301301 1-19
+.superpowers/sdd/2026-09-11-ai-research-agent-backend-implementation/task-1-report.md
+  s_7156cb0e949696::t_c355b635fc5280 1-27
+backend/tests/test_config.py
+  s_7156cb0e949696::t_32168917b02d4d 1-13
+backend/app/core/config.py
+  s_7156cb0e949696::t_ff4d12b710d4cd 2,7-8
+  s_7156cb0e949696::t_6295ab87146d25 1,3-6,9-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2b8d0400fbf5811b3c2a13a6646499f4b0cd5b0c",
+  "prompts": {},
+  "sessions": {
+    "s_7156cb0e949696": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ece099ffeTr5LISKe8eTJXM",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    },
+    "s_eba63eccd66b5b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70f3fbe8ffehAAwxrStS5WEPl",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
