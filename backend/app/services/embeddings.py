@@ -14,7 +14,9 @@ class EmbeddingService:
                 "https://api.openai.com/v1/embeddings",
                 headers={"Authorization": f"Bearer {self.api_key}"},
                 json={"model": self.model, "input": text},
+                timeout=30.0,
             )
+            response.raise_for_status()
             data = response.json()
             return data["data"][0]["embedding"]
 

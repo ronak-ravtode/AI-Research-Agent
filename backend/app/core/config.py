@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     APP_NAME: str = "agentic-research-assistant"
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "llama-3.1-70b-versatile"
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
     TAVILY_API_KEY: str = ""
     FIRECRAWL_API_KEY: str = ""
     SUPABASE_URL: str = ""

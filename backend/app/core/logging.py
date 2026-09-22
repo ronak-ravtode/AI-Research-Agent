@@ -1,16 +1,22 @@
 import logging
 import json
-from datetime import datetime
+import sys
+from datetime import datetime, timezone
 from typing import Any
 
 
 class StructuredLogger:
     def __init__(self, name: str):
         self.logger = logging.getLogger(name)
+        if not self.logger.handlers:
+            handler = logging.StreamHandler(sys.stdout)
+            handler.setFormatter(logging.Formatter("%(message)s"))
+            self.logger.addHandler(handler)
+            self.logger.setLevel(logging.INFO)
 
     def _format(self, level: str, message: str, data: dict = None) -> str:
         log_entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "level": level,
             "message": message,
             "data": data or {},
@@ -25,6 +31,9 @@ class StructuredLogger:
 
     def warning(self, message: str, data: dict = None):
         self.logger.warning(self._format("WARNING", message, data))
+
+    def debug(self, message: str, data: dict = None):
+        self.logger.debug(self._format("DEBUG", message, data))
 
 
 logger = StructuredLogger("agentic-research-assistant")

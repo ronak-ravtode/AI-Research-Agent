@@ -1,11 +1,10 @@
-from typing import Any
 from uuid import uuid4
+
 
 def map_citations(verified_claims: list[dict], sources: list[dict]) -> list[dict]:
     source_url_to_id = {s.get("url"): s.get("id") for s in sources}
     citations = []
     citation_counter = 1
-
     seen_claims = set()
 
     for claim in verified_claims:

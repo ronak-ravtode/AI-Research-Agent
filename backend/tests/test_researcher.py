@@ -12,9 +12,11 @@ async def test_researcher_searches_and_returns_sources():
     ]
 
     with patch("app.agents.researcher.llm_service") as mock_llm, \
-         patch("app.agents.researcher.tavily_search") as mock_tavily:
+         patch("app.agents.researcher.tavily_search") as mock_tavily, \
+         patch("app.agents.researcher.firecrawl_extract") as mock_firecrawl:
         mock_llm.generate = AsyncMock(return_value="AI productivity study 2026")
         mock_tavily.search_web = AsyncMock(return_value=mock_results)
+        mock_firecrawl.extract_url = AsyncMock(return_value=None)
 
         state = ResearchState(
             research_id="test-id",

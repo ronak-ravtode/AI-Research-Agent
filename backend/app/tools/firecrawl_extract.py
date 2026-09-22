@@ -1,3 +1,4 @@
+import asyncio
 from firecrawl import FirecrawlApp
 from dataclasses import dataclass
 from app.core.config import get_settings
@@ -25,7 +26,9 @@ class FirecrawlExtract:
 
     async def extract_url(self, url: str) -> ExtractedContent:
         try:
-            result = self.app.scrape_url(url, params={"formats": ["markdown"]})
+            result = await asyncio.to_thread(
+                self.app.scrape_url, url, params={"formats": ["markdown"]}
+            )
 
             return ExtractedContent(
                 url=url,

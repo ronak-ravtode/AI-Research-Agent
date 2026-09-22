@@ -27,11 +27,18 @@ Research depth: {depth}
 
 Create a research plan."""
 
-    plan = await llm_service.structured_generate(
-        prompt=prompt,
-        system_prompt=PLANNER_SYSTEM_PROMPT,
-        temperature=0.3,
-    )
+    try:
+        plan = await llm_service.structured_generate(
+            prompt=prompt,
+            system_prompt=PLANNER_SYSTEM_PROMPT,
+            temperature=0.3,
+        )
+    except Exception:
+        plan = {
+            "subtasks": [
+                {"id": 1, "task": f"Research: {query}", "priority": "high"}
+            ]
+        }
 
     return {
         "research_plan": plan.get("subtasks", []),

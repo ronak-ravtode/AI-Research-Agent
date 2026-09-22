@@ -1,9 +1,8 @@
-from typing import TypedDict, Annotated, Optional
-from uuid import UUID
+from typing import TypedDict, Annotated
 import operator
 
 
-class ResearchState(TypedDict):
+class ResearchState(TypedDict, total=False):
     """State definition for the research agent workflow."""
     research_id: str
     user_query: str
@@ -22,3 +21,4 @@ class ResearchState(TypedDict):
     iteration: int
     status: str
     errors: Annotated[list, operator.add]
+    research_depth: str

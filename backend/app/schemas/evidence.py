@@ -1,17 +1,19 @@
 from pydantic import BaseModel
-from uuid import UUID
+from typing import Optional
 from datetime import datetime
 
 
 class EvidenceResponse(BaseModel):
-    id: UUID
-    source_id: UUID
+    id: str
+    session_id: str
+    task_id: str
+    source_id: str
     claim: str
     evidence_text: str
-    evidence_type: str
-    confidence_score: float
+    evidence_type: str = "factual"
     verification_status: Optional[str] = None
-    created_at: datetime
+    confidence_score: float = 0.0
+    created_at: Optional[datetime] = None
 
 
 class EvidenceListResponse(BaseModel):

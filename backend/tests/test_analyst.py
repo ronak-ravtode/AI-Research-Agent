@@ -27,7 +27,7 @@ async def test_sufficiency_returns_when_max_iterations():
     )
 
     result = await sufficiency_agent(state)
-    assert result["status"] == "verifying"
+    assert result["status"] == "analyzing"
 
 @pytest.mark.asyncio
 async def test_sufficiency_calls_llm_when_under_max():
@@ -99,7 +99,7 @@ async def test_sufficiency_returns_verifying_when_sufficient():
         )
 
         result = await sufficiency_agent(state)
-        assert result["status"] == "verifying"
+        assert result["status"] == "analyzing"
 
 @pytest.mark.asyncio
 async def test_analyst_returns_analysis():

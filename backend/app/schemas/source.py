@@ -1,20 +1,20 @@
 from pydantic import BaseModel
 from typing import Optional
-from uuid import UUID
 from datetime import datetime
 
 
 class SourceResponse(BaseModel):
-    id: UUID
+    id: str
     title: str
     url: str
     domain: Optional[str] = None
     author: Optional[str] = None
     published_date: Optional[str] = None
-    source_type: str
-    relevance_score: float
-    reliability_score: float
-    retrieved_at: datetime
+    source_type: str = "unknown"
+    search_query: Optional[str] = None
+    relevance_score: float = 0.0
+    reliability_score: float = 0.0
+    retrieved_at: Optional[datetime] = None
 
 
 class SourceListResponse(BaseModel):

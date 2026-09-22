@@ -50,8 +50,9 @@ Source content:
 
             for claim in result.get("claims", []):
                 all_evidence.append({
-                    "source_id": source.get("id"),
+                    "source_id": source.get("id") or source.get("url"),
                     "source_url": source.get("url"),
+                    "task_id": source.get("task_id"),
                     "claim": claim.get("claim", ""),
                     "evidence_text": claim.get("evidence", ""),
                     "evidence_type": claim.get("evidence_type", "factual"),

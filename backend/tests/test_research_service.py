@@ -15,40 +15,36 @@ async def test_start_research_creates_session():
     mock_db = AsyncMock()
     service = ResearchService(mock_db)
 
-    mock_planner = AsyncMock(return_value={
+    mock_final_state = {
+        "research_id": "test-id",
+        "user_query": "What is AI?",
         "research_plan": [{"id": 1, "task": "Test task", "priority": "high"}],
-        "status": "planning",
-    })
-    mock_researcher = AsyncMock(return_value={
-        "sources": [{"title": "Src", "url": "http://example.com", "content": "content", "relevance_score": 0.8}],
-        "search_queries": ["test query"],
-        "status": "researching",
-    })
-    mock_extractor = AsyncMock(return_value={
-        "evidence": [{"source_id": None, "source_url": "http://example.com", "claim": "claim", "evidence_text": "text", "evidence_type": "factual", "confidence_score": 0.7}],
-        "status": "extracting",
-    })
-    mock_verifier = AsyncMock(return_value={
+        "sources": [{"title": "Src", "url": "http://example.com", "content": "content", "relevance_score": 0.8, "source_type": "unknown", "domain": "example.com"}],
+        "evidence": [{"source_url": "http://example.com", "claim": "claim", "evidence_text": "text", "evidence_type": "factual", "confidence_score": 0.7}],
         "verified_claims": [{"claim": "claim", "source_url": "http://example.com", "verification_status": "supported", "confidence": 0.9}],
-        "status": "verifying",
-    })
-    mock_sufficiency = AsyncMock(return_value={"status": "verifying"})
-    mock_analyst = AsyncMock(return_value={"analysis": "Conclusion", "status": "analyzing"})
-    mock_conflict = AsyncMock(return_value={"conflicts": [], "status": "analyzing"})
-    mock_writer = AsyncMock(return_value={
+        "conflicts": [],
+        "analysis": "Conclusion",
+        "citations": [],
+        "confidence_scores": {"overall": 0.85, "summary": {"total": 1, "supported": 1}},
         "report": {"title": "Test Report", "content": "Report content"},
-        "status": "writing",
-    })
+        "completed_tasks": [1],
+        "search_queries": ["test query"],
+        "iteration": 1,
+        "status": "completed",
+        "errors": [],
+        "current_task": "",
+        "research_depth": "standard",
+    }
 
-    with patch("app.services.research.planner_agent", mock_planner), \
-         patch("app.services.research.researcher_agent", mock_researcher), \
-         patch("app.services.research.extractor_agent", mock_extractor), \
-         patch("app.services.research.verifier_agent", mock_verifier), \
-         patch("app.services.research.sufficiency_agent", mock_sufficiency), \
-         patch("app.services.research.analyst_agent", mock_analyst), \
-         patch("app.services.research.conflict_detector_agent", mock_conflict), \
-         patch("app.services.research.writer_agent", mock_writer):
+    mock_graph = MagicMock()
+    mock_graph.ainvoke = AsyncMock(return_value=mock_final_state)
 
+    # Mock db.execute to return None for the session lookup (so it creates a new one)
+    mock_result = MagicMock()
+    mock_result.scalar_one_or_none.return_value = None
+    mock_db.execute = AsyncMock(return_value=mock_result)
+
+    with patch("app.services.research.create_research_graph", return_value=mock_graph):
         result = await service.start_research("What is AI?")
 
     assert result is not None

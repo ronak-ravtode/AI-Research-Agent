@@ -1,10 +1,10 @@
-from app.database.models import ResearchSession, Source, ResearchStatus
+from app.database.models import ResearchSession, Source
 
 
 def test_research_session_creation():
     session = ResearchSession(query="Test query")
     assert session.query == "Test query"
-    assert session.status == ResearchStatus.PLANNING.value
+    assert session.status == "planning"
 
 
 def test_source_creation():

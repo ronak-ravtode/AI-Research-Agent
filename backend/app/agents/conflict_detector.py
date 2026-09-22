@@ -38,10 +38,13 @@ async def conflict_detector_agent(state: ResearchState) -> dict:
         ]),
     )
 
-    result = await llm_service.structured_generate(
-        prompt=prompt,
-        temperature=0.2,
-    )
+    try:
+        result = await llm_service.structured_generate(
+            prompt=prompt,
+            temperature=0.2,
+        )
+    except Exception:
+        return {"conflicts": [], "status": "analyzing"}
 
     return {
         "conflicts": result.get("conflicts", []),

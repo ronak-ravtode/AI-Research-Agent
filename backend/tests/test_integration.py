@@ -180,7 +180,7 @@ async def test_verifier_agent():
     
     with patch("app.agents.verifier.llm_service") as mock_llm:
         mock_llm.structured_generate = AsyncMock(return_value={
-            "claims": [{"claim": "ML is AI", "verification_status": "supported", "confidence": 0.9}]
+            "verified_claims": [{"claim": "ML is AI", "verification_status": "supported", "confidence": 0.9}]
         })
         result = await verifier_agent(mock_state)
         assert "verified_claims" in result

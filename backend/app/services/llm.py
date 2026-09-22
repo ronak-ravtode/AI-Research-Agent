@@ -2,6 +2,8 @@ from groq import AsyncGroq
 from app.core.config import get_settings
 from typing import Optional
 import json
+import re
+
 
 class LLMService:
     def __init__(self):
@@ -44,13 +46,26 @@ class LLMService:
         )
 
         cleaned = response_text.strip()
-        if cleaned.startswith("```json"):
-            cleaned = cleaned[7:]
-        if cleaned.startswith("```"):
-            cleaned = cleaned[3:]
-        if cleaned.endswith("```"):
-            cleaned = cleaned[:-3]
 
-        return json.loads(cleaned.strip())
+        json_match = re.search(r"```json\s*\n?(.*?)\n?\s*```", cleaned, re.DOTALL)
+        if json_match:
+            cleaned = json_match.group(1).strip()
+        else:
+            for prefix in ["```json", "```"]:
+                if cleaned.startswith(prefix):
+                    cleaned = cleaned[len(prefix):]
+            if cleaned.endswith("```"):
+                cleaned = cleaned[:-3]
+            cleaned = cleaned.strip()
+
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            first_brace = cleaned.find("{")
+            last_brace = cleaned.rfind("}")
+            if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+                return json.loads(cleaned[first_brace:last_brace + 1])
+            raise
+
 
 llm_service = LLMService()

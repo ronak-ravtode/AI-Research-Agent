@@ -15,5 +15,5 @@ def test_start_research_too_short():
 
 
 def test_research_response():
-    resp = ResearchResponse(research_id=uuid4(), status="started")
+    resp = ResearchResponse(research_id=str(uuid4()), status="started")
     assert resp.status == "started"

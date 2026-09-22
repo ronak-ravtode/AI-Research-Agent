@@ -34,8 +34,9 @@ def calculate_confidence(verified_claims: list[dict]) -> dict:
     supported_ratio = supported / total
     partial_ratio = partial / total
     contradicted_penalty = contradicted / total
+    unsupported_penalty = unsupported / total
 
-    overall = (supported_ratio * 0.9 + partial_ratio * 0.5 - contradicted_penalty * 0.3)
+    overall = (supported_ratio * 0.9 + partial_ratio * 0.5 - contradicted_penalty * 0.3 - unsupported_penalty * 0.1)
     overall = max(0.0, min(1.0, overall))
 
     return {

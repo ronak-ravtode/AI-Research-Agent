@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from typing import Optional
-from uuid import UUID
 from datetime import datetime
 from typing import Literal
 
@@ -11,15 +10,15 @@ class StartResearchRequest(BaseModel):
 
 
 class ResearchResponse(BaseModel):
-    research_id: UUID
+    research_id: str
     status: str
 
 
 class ResearchStatusResponse(BaseModel):
-    research_id: UUID
+    research_id: str
     query: str
     status: str
     research_depth: str
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None

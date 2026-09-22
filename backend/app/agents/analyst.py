@@ -34,13 +34,14 @@ Respond in JSON:
 
 MAX_ITERATIONS = {"quick": 1, "standard": 2, "deep": 4}
 
+
 async def sufficiency_agent(state: ResearchState) -> dict:
     depth = state.get("research_depth", "standard")
     iteration = state.get("iteration", 0)
     max_iter = MAX_ITERATIONS.get(depth, 2)
 
     if iteration >= max_iter:
-        return {"status": "verifying"}
+        return {"status": "analyzing"}
 
     evidence = state.get("verified_claims", [])
     sources = state.get("sources", [])
@@ -54,19 +55,23 @@ async def sufficiency_agent(state: ResearchState) -> dict:
         max_iterations=max_iter,
     )
 
-    result = await llm_service.structured_generate(
-        prompt=prompt,
-        temperature=0.2,
-    )
+    try:
+        result = await llm_service.structured_generate(
+            prompt=prompt,
+            temperature=0.2,
+        )
+    except Exception:
+        return {"status": "analyzing"}
 
     if result.get("sufficient", False):
-        return {"status": "verifying"}
+        return {"status": "analyzing"}
 
     return {
         "search_queries": result.get("next_searches", []),
         "iteration": iteration + 1,
         "status": "researching",
     }
+
 
 async def analyst_agent(state: ResearchState) -> dict:
     claims = state.get("verified_claims", [])
@@ -79,10 +84,16 @@ async def analyst_agent(state: ResearchState) -> dict:
         ]),
     )
 
-    result = await llm_service.structured_generate(
-        prompt=prompt,
-        temperature=0.3,
-    )
+    try:
+        result = await llm_service.structured_generate(
+            prompt=prompt,
+            temperature=0.3,
+        )
+    except Exception:
+        return {
+            "analysis": "Analysis could not be completed due to processing errors.",
+            "status": "analyzing",
+        }
 
     return {
         "analysis": result.get("conclusion", ""),
