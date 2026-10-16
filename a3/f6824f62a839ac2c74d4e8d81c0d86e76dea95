@@ -1,0 +1,24 @@
+backend/app/database/database.py
+  s_bcf3aecf568e05::t_9a324d327ab146 20-35,43-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a3f6824f62a839ac2c74d4e8d81c0d86e76dea95",
+  "prompts": {},
+  "humans": {
+    "h_c5a3d01edfee72": {
+      "author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_bcf3aecf568e05": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ebc9c1606ffeTVgDXSPLwRYebt",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
