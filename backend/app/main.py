@@ -1,31 +1,41 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
+
+from app.api import health, research, sources
 from app.core.config import get_settings
-from app.database.database import _get_engine, Base
-from app.api import health, research, reports, sources, history
 from app.core.logging import logger
+from app.database.database import Base, _get_engine
 
 settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting agentic-research-assistant", data={"env": settings.APP_ENV})
+    logger.info(
+        "Starting ai-research-assistant",
+        data={
+            "env": settings.APP_ENV,
+            "missing_config": settings.missing_required_keys(),
+        },
+    )
 
     engine = _get_engine()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables verified")
+    logger.info("Database schema ready")
 
     yield
 
-    logger.info("Shutting down agentic-research-assistant")
+    await engine.dispose()
+    logger.info("Shutdown complete")
 
 
 app = FastAPI(
-    title=settings.APP_NAME,
-    version="0.1.0",
+    title="AI Research Assistant",
+    description="Web research with cited sources.",
+    version="1.0.0",
     lifespan=lifespan,
 )
 
@@ -35,7 +45,7 @@ if settings.APP_ENV == "development":
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=list(dict.fromkeys(origins)),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,6 +53,4 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(research.router)
-app.include_router(reports.router)
 app.include_router(sources.router)
-app.include_router(history.router)

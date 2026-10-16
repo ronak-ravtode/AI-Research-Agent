@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel
 
 
 class SourceResponse(BaseModel):
@@ -8,12 +9,10 @@ class SourceResponse(BaseModel):
     title: str
     url: str
     domain: Optional[str] = None
-    author: Optional[str] = None
-    published_date: Optional[str] = None
-    source_type: str = "unknown"
-    search_query: Optional[str] = None
-    relevance_score: float = 0.0
-    reliability_score: float = 0.0
+    source_type: str = "Web article"
+    snippet: Optional[str] = None
+    retrieval_method: str = "tavily_snippet"
+    search_score: float = 0.0
     retrieved_at: Optional[datetime] = None
 
 

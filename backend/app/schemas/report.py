@@ -1,28 +1,14 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
-
-class ReportResponse(BaseModel):
-    id: str
-    research_id: str
-    title: str
-    content: str
-    executive_summary: Optional[str] = None
-    methodology: Optional[str] = None
-    findings: Optional[str] = None
-    analysis: Optional[str] = None
-    conclusion: Optional[str] = None
-    references: Optional[str] = None
-    created_at: Optional[datetime] = None
+from pydantic import BaseModel
 
 
 class HistoryItem(BaseModel):
     research_id: str
     query: str
     status: str
-    research_depth: str = "standard"
     source_count: int = 0
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    has_report: bool = False
     created_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None

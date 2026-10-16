@@ -26,8 +26,13 @@ class StructuredLogger:
     def info(self, message: str, data: dict = None):
         self.logger.info(self._format("INFO", message, data))
 
-    def error(self, message: str, data: dict = None):
-        self.logger.error(self._format("ERROR", message, data))
+    def error(self, message: str, data: dict = None, exc_info=None):
+        """`exc_info` may be an exception instance, True, or None.
+
+        An exception instance is rendered by the underlying logging machinery, so the
+        traceback reaches the server log while `data` stays the only structured payload.
+        """
+        self.logger.error(self._format("ERROR", message, data), exc_info=exc_info)
 
     def warning(self, message: str, data: dict = None):
         self.logger.warning(self._format("WARNING", message, data))

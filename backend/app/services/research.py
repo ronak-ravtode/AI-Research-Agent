@@ -1,210 +1,233 @@
-from uuid import uuid4
+"""The research workflow: four stages, one failure path.
+
+    plan → search → extract → write
+
+Each stage transition writes `status`, `current_stage` and `progress_message` on the
+session *and* appends a `research_activity` row in the same transaction, so the timeline a
+client streams can never disagree with the session row it also reads.
+
+There is exactly one catch site. A failure rolls back the run's writes, records a safe
+user-facing message, and logs the real cause server-side. Nothing is swallowed and
+reported as success.
+"""
+
 from datetime import datetime, timezone
-from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
+
 from sqlalchemy import select
-from app.database.models import (
-    ResearchSession, ResearchTask, Source, Evidence,
-    Citation, Report, AgentLog,
-)
-from app.agents.graph import create_research_graph
-from app.services.citations import map_citations
-from app.services.confidence import calculate_confidence
-from app.agents.state import ResearchState
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.config import get_settings
+from app.core.exceptions import ResearchRunError
 from app.core.logging import logger
+from app.database.models import (
+    STATUS_COMPLETED,
+    STATUS_FAILED,
+    STATUS_RUNNING,
+    Report,
+    ResearchActivity,
+    ResearchSession,
+    Source,
+)
+from app.services.extraction import RetrievedSource, extraction_service
+from app.services.planning import planning_service
+from app.services.report import report_service
+from app.services.search import SearchResult, search_service
+
+STAGE_PLAN = "planning"
+STAGE_SEARCH = "searching"
+STAGE_EXTRACT = "reading"
+STAGE_WRITE = "writing"
+STAGE_DONE = "complete"
 
 
 class ResearchService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def start_research(self, query: str, depth: str = "standard", research_id=None) -> str:
-        if research_id is None:
-            research_id = uuid4()
-        else:
-            from uuid import UUID
-            research_id = UUID(research_id) if not isinstance(research_id, UUID) else research_id
+    async def run(self, session_id: UUID) -> None:
+        """Execute a full research run for an already-created session."""
+        settings = get_settings()
+        settings.validate_required_keys()
 
-        # Fetch existing session (created by API endpoint) or create new one
-        result = await self.db.execute(
-            select(ResearchSession).where(ResearchSession.id == research_id)
-        )
-        session = result.scalar_one_or_none()
-        if not session:
-            session = ResearchSession(
-                id=research_id,
-                query=query,
-                research_depth=depth,
-                status="planning",
-                started_at=datetime.now(timezone.utc),
+        session = await self._load(session_id)
+        if session is None:
+            raise ResearchRunError(detail=f"session {session_id} disappeared")
+
+        query = session.query.strip()
+
+        try:
+            await self._stage(session, STAGE_PLAN, "Breaking the question into search queries")
+
+            queries = await planning_service.plan_queries(query)
+            logger.info("Planned search queries", data={"count": len(queries)})
+
+            await self._stage(session, STAGE_SEARCH, "Searching the web with Tavily")
+            results = await search_service.search(queries)
+            if not results:
+                await self._mark_failed(
+                    session, "No usable sources were found for that question."
+                )
+                return
+
+            await self._stage(
+                session, STAGE_SEARCH, f"Found {len(results)} possible sources"
             )
-            self.db.add(session)
-            await self.db.flush()
+            results = await self._broaden_if_thin(query, results)
 
-        state = ResearchState(
-            research_id=str(research_id),
-            user_query=query,
-            research_plan=[],
-            current_task="",
-            completed_tasks=[],
-            search_queries=[],
-            sources=[],
-            evidence=[],
-            verified_claims=[],
-            conflicts=[],
-            analysis="",
-            citations=[],
-            confidence_scores={},
-            report={},
-            iteration=0,
-            status="planning",
-            errors=[],
-            research_depth=depth,
+            await self._stage(session, STAGE_EXTRACT, "Reading selected pages")
+            sources = await extraction_service.extract(results)
+            await self._stage(
+                session,
+                STAGE_EXTRACT,
+                f"Read {sum(1 for s in sources if s.content)} of {len(sources)} pages",
+            )
+
+            await self._stage(session, STAGE_WRITE, "Preparing the cited answer")
+            report = await report_service.write_report(query, sources)
+
+            # Sources are persisted before the report so a report can never reference a
+            # source that is not in the database.
+            stored = await self._persist_sources(session, sources)
+            self.db.add(
+                Report(
+                    session_id=session.id,
+                    title=report.title,
+                    answer_markdown=report.answer_markdown,
+                )
+            )
+            session.status = STATUS_COMPLETED
+            session.current_stage = STAGE_DONE
+            session.progress_message = "Research complete"
+            session.completed_at = datetime.now(timezone.utc)
+            session.error_message = None
+            self._activity(session, STAGE_DONE, "Research complete")
+            await self.db.commit()
+
+            logger.info(
+                "Research completed",
+                data={"session_id": str(session.id), "sources": len(stored)},
+            )
+
+        except ResearchRunError as exc:
+            await self._fail(session, exc)
+        except Exception as exc:
+            await self._fail(session, exc)
+
+    async def _broaden_if_thin(
+        self, query: str, results: list[SearchResult]
+    ) -> list[SearchResult]:
+        """The one allowed fallback: a single broader search on the original question."""
+        if len(results) >= 2:
+            return results
+        try:
+            broader = await search_service.search([query])
+        except Exception as exc:
+            logger.warning(
+                "Broader fallback search failed",
+                data={"error": type(exc).__name__},
+            )
+            return results
+
+        seen = {r.normalized_url or r.url for r in results}
+        merged = list(results)
+        for item in broader:
+            key = item.normalized_url or item.url
+            if key not in seen:
+                seen.add(key)
+                merged.append(item)
+        merged.sort(key=lambda r: r.score, reverse=True)
+        return merged[: get_settings().MAX_SEARCH_RESULTS]
+
+    async def _persist_sources(
+        self, session: ResearchSession, sources: list[RetrievedSource]
+    ) -> list[Source]:
+        stored: list[Source] = []
+        for source in sources:
+            row = Source(
+                session_id=session.id,
+                title=source.title,
+                url=source.url,
+                domain=source.domain,
+                source_type=source.source_type,
+                snippet=source.snippet,
+                content=source.content,
+                retrieval_method=source.retrieval_method,
+                search_score=source.search_score,
+                retrieved_at=datetime.now(timezone.utc),
+            )
+            self.db.add(row)
+            stored.append(row)
+        await self.db.flush()
+        return stored
+
+    async def _stage(
+        self, session: ResearchSession, stage: str, message: str
+    ) -> None:
+        session.status = STATUS_RUNNING
+        session.current_stage = stage
+        session.progress_message = message
+        session.started_at = session.started_at or datetime.now(timezone.utc)
+        session.error_message = None
+        self._activity(session, stage, message)
+        await self.db.commit()
+        logger.info(message, data={"session_id": str(session.id), "stage": stage})
+
+    def _activity(
+        self, session: ResearchSession, stage: str, message: str
+    ) -> None:
+        self.db.add(
+            ResearchActivity(
+                session_id=session.id, stage=stage, message=message
+            )
+        )
+
+    async def _mark_failed(self, session: ResearchSession, message: str) -> None:
+        session.status = STATUS_FAILED
+        session.current_stage = STAGE_DONE
+        session.progress_message = "Research failed"
+        session.error_message = message
+        session.completed_at = datetime.now(timezone.utc)
+        self._activity(session, STAGE_DONE, message)
+        await self.db.commit()
+        logger.warning(
+            "Research failed", data={"session_id": str(session.id), "reason": message}
+        )
+
+    async def _fail(self, session: ResearchSession, exc: BaseException) -> None:
+        """Roll back partial work, then record a safe failure.
+
+        The exception itself goes to the log with a traceback; the client only ever sees the
+        class's fixed user_message.
+        """
+        try:
+            await self.db.rollback()
+        except Exception:
+            logger.error("Rollback failed", data={"exc": repr(exc)})
+
+        user_message = (
+            exc.user_message
+            if isinstance(exc, ResearchRunError)
+            else "Research could not be completed. Please try again."
+        )
+        logger.error(
+            "Research run failed",
+            data={"session_id": str(session.id), "error": repr(exc)},
+            exc_info=exc,
         )
 
         try:
-            graph = create_research_graph()
-            final_state = await graph.ainvoke(state)
-
-            task_ids = {}
-            for i, subtask in enumerate(final_state.get("research_plan", [])):
-                task_id = uuid4()
-                task_ids[subtask.get("id")] = task_id
-                db_task = ResearchTask(
-                    id=task_id,
-                    session_id=research_id,
-                    task_number=i + 1,
-                    title=subtask.get("task", ""),
-                    description=subtask.get("task", ""),
-                    status="completed",
-                    completed_at=datetime.now(timezone.utc),
-                )
-                self.db.add(db_task)
-
-            source_id_map = {}
-            for src in final_state.get("sources", []):
-                source_db_id = uuid4()
-                source_url = src.get("url", "")
-                source_str_id = src.get("id", "")
-                source_id_map[source_url] = source_db_id
-                if source_str_id:
-                    source_id_map[source_str_id] = source_db_id
-                db_source = Source(
-                    id=source_db_id,
-                    session_id=research_id,
-                    title=src.get("title", ""),
-                    url=source_url,
-                    domain=src.get("domain"),
-                    source_type=src.get("source_type", "unknown"),
-                    search_query=src.get("search_query"),
-                    content=src.get("content"),
-                    relevance_score=src.get("relevance_score", 0.0),
-                    reliability_score=src.get("reliability_score", 0.0),
-                    retrieved_at=datetime.now(timezone.utc),
-                )
-                self.db.add(db_source)
-
-            evidence_db_ids = {}
-            for ev in final_state.get("evidence", []):
-                source_url = ev.get("source_url", "")
-                source_db_id = source_id_map.get(source_url)
-                if not source_db_id:
-                    continue
-
-                task_key = ev.get("task_id")
-                task_db_id = task_ids.get(task_key) if task_key else list(task_ids.values())[0] if task_ids else uuid4()
-
-                evidence_db_id = uuid4()
-                db_evidence = Evidence(
-                    id=evidence_db_id,
-                    session_id=research_id,
-                    task_id=task_db_id,
-                    source_id=source_db_id,
-                    claim=ev.get("claim", ""),
-                    evidence_text=ev.get("evidence_text", ""),
-                    evidence_type=ev.get("evidence_type", "factual"),
-                    confidence_score=ev.get("confidence_score", 0.5),
-                )
-                self.db.add(db_evidence)
-                evidence_db_ids[ev.get("claim", "")] = evidence_db_id
-
-            citations = map_citations(
-                final_state.get("verified_claims", []),
-                final_state.get("sources", []),
+            session = await self._load(session.id) or session
+            await self._mark_failed(session, user_message)
+        except Exception:
+            logger.error(
+                "Could not persist failure state",
+                data={"session_id": str(session.id)},
+                exc_info=True,
             )
 
-            for citation in citations:
-                source_url = citation.get("source_url", "")
-                source_db_id = source_id_map.get(source_url)
-                if not source_db_id:
-                    continue
-
-                claim_text = citation.get("claim", "")
-                evidence_db_id = evidence_db_ids.get(claim_text)
-
-                if not evidence_db_id:
-                    evidence_db_id = uuid4()
-                    db_evidence = Evidence(
-                        id=evidence_db_id,
-                        session_id=research_id,
-                        task_id=list(task_ids.values())[0] if task_ids else uuid4(),
-                        source_id=source_db_id,
-                        claim=claim_text,
-                        evidence_text="",
-                        evidence_type="factual",
-                    )
-                    self.db.add(db_evidence)
-
-                db_citation = Citation(
-                    session_id=research_id,
-                    evidence_id=evidence_db_id,
-                    source_id=source_db_id,
-                    claim=claim_text,
-                    citation_number=citation.get("citation_number", 1),
-                    quote=claim_text,
-                )
-                self.db.add(db_citation)
-
-            report_data = final_state.get("report", {})
-            if report_data:
-                report_content = report_data.get("content", "")
-                report_references = "\n".join([
-                    f"[{c.get('citation_number', i+1)}] {c.get('source_url', '')}"
-                    for i, c in enumerate(report_data.get("citations", []))
-                ])
-                report = Report(
-                    session_id=research_id,
-                    title=report_data.get("title", "Research Report"),
-                    content=report_content,
-                    executive_summary=report_content[:500] if report_content else None,
-                    references=report_references if report_references else None,
-                )
-                self.db.add(report)
-
-            self._log_agent(research_id, "planner", "Created research plan")
-            self._log_agent(research_id, "researcher", "Searched web sources")
-            self._log_agent(research_id, "extractor", "Extracted evidence")
-            self._log_agent(research_id, "verifier", "Verified claims")
-            self._log_agent(research_id, "analyst", "Analyzed findings")
-            self._log_agent(research_id, "conflict_detector", "Detected conflicts")
-            self._log_agent(research_id, "writer", "Generated report")
-
-            session.status = "completed"
-            session.completed_at = datetime.now(timezone.utc)
-            session.summary = report_data.get("content", "")[:500] if report_data else ""
-
-        except Exception as e:
-            logger.error(f"Research failed: {e}", data={"research_id": str(research_id)})
-            session.status = "failed"
-            session.completed_at = datetime.now(timezone.utc)
-            self._log_agent(research_id, "system", f"Error: {str(e)}", status="failed")
-
-        return str(research_id)
-
-    def _log_agent(self, research_id, agent_name, action, status="completed"):
-        log = AgentLog(
-            session_id=research_id,
-            agent_name=agent_name,
-            action=action[:250],
-            status=status,
+    async def _load(self, session_id: UUID) -> ResearchSession | None:
+        result = await self.db.execute(
+            select(ResearchSession).where(ResearchSession.id == session_id)
         )
-        self.db.add(log)
+        return result.scalar_one_or_none()
