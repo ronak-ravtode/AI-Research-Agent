@@ -306,11 +306,42 @@ async def test_unexpected_exception_is_still_recorded_as_failed(db_session, stub
     assert "unexpected" not in (session.error_message or "").lower()
 
 
-async def test_missing_session_raises(db_session, stubs):
+async def test_missing_session_does_not_raise(db_session, stubs):
+    """`run` must never raise: a background task that throws leaves the UI stuck."""
     from app.services.research import ResearchService
 
-    with pytest.raises(Exception):
-        await ResearchService(db_session).run(uuid4())
+    # No exception, and nothing is invented for a session that does not exist.
+    await ResearchService(db_session).run(uuid4())
+
+
+async def test_configuration_failure_marks_session_failed(db_session, monkeypatch):
+    """A missing provider key must fail the session, not leave it queued forever."""
+    from app.services.research import ResearchService
+
+    class _BrokenSettings:
+        def validate_required_keys(self):
+            from app.core.exceptions import ConfigurationError
+
+            raise ConfigurationError(detail="missing settings: GROQ_API_KEY")
+
+    monkeypatch.setattr(
+        "app.services.research.get_settings", lambda: _BrokenSettings()
+    )
+    session = await _new_session(db_session)
+
+    await ResearchService(db_session).run(session.id)
+    await db_session.refresh(session)
+
+    assert session.status == STATUS_FAILED
+    assert session.error_message
+    assert "GROQ_API_KEY" not in session.error_message
+
+
+async def test_vanished_session_is_logged_not_raised(db_session, stubs):
+    """A session deleted before the run begins must not raise either."""
+    from app.services.research import ResearchService
+
+    await ResearchService(db_session).run(uuid4())
 
 
 async def test_thin_results_trigger_one_broader_search(

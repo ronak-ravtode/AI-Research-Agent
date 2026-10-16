@@ -46,73 +46,81 @@ class ResearchService:
         self.db = db
 
     async def run(self, session_id: UUID) -> None:
-        """Execute a full research run for an already-created session."""
-        settings = get_settings()
-        settings.validate_required_keys()
+        """Execute a full research run for an already-created session.
 
-        session = await self._load(session_id)
-        if session is None:
-            raise ResearchRunError(detail=f"session {session_id} disappeared")
-
-        query = session.query.strip()
-
+        Every failure path ends in a persisted `failed` status. Nothing is raised to the
+        caller, because a background task that throws would leave the session stuck on
+        `queued` with no way for a client to discover why.
+        """
         try:
-            await self._stage(session, STAGE_PLAN, "Breaking the question into search queries")
-
-            queries = await planning_service.plan_queries(query)
-            logger.info("Planned search queries", data={"count": len(queries)})
-
-            await self._stage(session, STAGE_SEARCH, "Searching the web with Tavily")
-            results = await search_service.search(queries)
-            if not results:
-                await self._mark_failed(
-                    session, "No usable sources were found for that question."
+            get_settings().validate_required_keys()
+            session = await self._load(session_id)
+            if session is None:
+                logger.error(
+                    "Research session vanished before the run started",
+                    data={"session_id": str(session_id)},
                 )
                 return
-
-            await self._stage(
-                session, STAGE_SEARCH, f"Found {len(results)} possible sources"
-            )
-            results = await self._broaden_if_thin(query, results)
-
-            await self._stage(session, STAGE_EXTRACT, "Reading selected pages")
-            sources = await extraction_service.extract(results)
-            await self._stage(
-                session,
-                STAGE_EXTRACT,
-                f"Read {sum(1 for s in sources if s.content)} of {len(sources)} pages",
-            )
-
-            await self._stage(session, STAGE_WRITE, "Preparing the cited answer")
-            report = await report_service.write_report(query, sources)
-
-            # Sources are persisted before the report so a report can never reference a
-            # source that is not in the database.
-            stored = await self._persist_sources(session, sources)
-            self.db.add(
-                Report(
-                    session_id=session.id,
-                    title=report.title,
-                    answer_markdown=report.answer_markdown,
-                )
-            )
-            session.status = STATUS_COMPLETED
-            session.current_stage = STAGE_DONE
-            session.progress_message = "Research complete"
-            session.completed_at = datetime.now(timezone.utc)
-            session.error_message = None
-            self._activity(session, STAGE_DONE, "Research complete")
-            await self.db.commit()
-
-            logger.info(
-                "Research completed",
-                data={"session_id": str(session.id), "sources": len(stored)},
-            )
-
+            await self._execute(session)
         except ResearchRunError as exc:
-            await self._fail(session, exc)
+            await self._fail(session_id, exc)
         except Exception as exc:
-            await self._fail(session, exc)
+            await self._fail(session_id, exc)
+
+    async def _execute(self, session: ResearchSession) -> None:
+        """The four stages. Failures propagate to `run`, which records them."""
+        settings = get_settings()
+        query = session.query.strip()
+
+        await self._stage(session, STAGE_PLAN, "Breaking the question into search queries")
+
+        queries = await planning_service.plan_queries(query)
+        logger.info("Planned search queries", data={"count": len(queries)})
+
+        await self._stage(session, STAGE_SEARCH, "Searching the web with Tavily")
+        results = await search_service.search(queries)
+        if not results:
+            await self._mark_failed(
+                session, "No usable sources were found for that question."
+            )
+            return
+
+        await self._stage(session, STAGE_SEARCH, f"Found {len(results)} possible sources")
+        results = await self._broaden_if_thin(query, results)
+
+        await self._stage(session, STAGE_EXTRACT, "Reading selected pages")
+        sources = await extraction_service.extract(results)
+        await self._stage(
+            session,
+            STAGE_EXTRACT,
+            f"Read {sum(1 for s in sources if s.content)} of {len(sources)} pages",
+        )
+
+        await self._stage(session, STAGE_WRITE, "Preparing the cited answer")
+        report = await report_service.write_report(query, sources)
+
+        # Sources are persisted before the report so a report can never reference a
+        # source that is not in the database.
+        stored = await self._persist_sources(session, sources)
+        self.db.add(
+            Report(
+                session_id=session.id,
+                title=report.title,
+                answer_markdown=report.answer_markdown,
+            )
+        )
+        session.status = STATUS_COMPLETED
+        session.current_stage = STAGE_DONE
+        session.progress_message = "Research complete"
+        session.completed_at = datetime.now(timezone.utc)
+        session.error_message = None
+        self._activity(session, STAGE_DONE, "Research complete")
+        await self.db.commit()
+
+        logger.info(
+            "Research completed",
+            data={"session_id": str(session.id), "sources": len(stored)},
+        )
 
     async def _broaden_if_thin(
         self, query: str, results: list[SearchResult]
@@ -194,7 +202,7 @@ class ResearchService:
             "Research failed", data={"session_id": str(session.id), "reason": message}
         )
 
-    async def _fail(self, session: ResearchSession, exc: BaseException) -> None:
+    async def _fail(self, session_id: UUID, exc: BaseException) -> None:
         """Roll back partial work, then record a safe failure.
 
         The exception itself goes to the log with a traceback; the client only ever sees the
@@ -212,17 +220,19 @@ class ResearchService:
         )
         logger.error(
             "Research run failed",
-            data={"session_id": str(session.id), "error": repr(exc)},
+            data={"session_id": str(session_id), "error": repr(exc)},
             exc_info=exc,
         )
 
         try:
-            session = await self._load(session.id) or session
+            session = await self._load(session_id)
+            if session is None:
+                return
             await self._mark_failed(session, user_message)
         except Exception:
             logger.error(
                 "Could not persist failure state",
-                data={"session_id": str(session.id)},
+                data={"session_id": str(session_id)},
                 exc_info=True,
             )
 
