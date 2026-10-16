@@ -1,0 +1,56 @@
+frontend/src/app/globals.css
+  s_bcf3aecf568e05::t_f80d35ee5d4996 3-9,11-13,19-140
+frontend/src/components/SourceList.tsx
+  s_bcf3aecf568e05::t_be6ba53a7ca467 1-68
+frontend/src/components/ResearchReport.tsx
+  s_bcf3aecf568e05::t_c1a49de8b01955 3
+  s_bcf3aecf568e05::t_46fe93cf7b11a6 1-2,4-11,13-78,81-82,84-106
+  s_bcf3aecf568e05::t_d16e44f0fa6625 12
+  s_bcf3aecf568e05::t_b41775670871f3 79-80,83
+frontend/src/lib/api.ts
+  s_bcf3aecf568e05::t_965fc75e00f04c 117-118,122-127
+  s_bcf3aecf568e05::t_411d8b1099d837 1-17,19-23,26-45,48-56,59-60,63,67-72,75-78,81-84,87-116,119-121,128-148,151-157
+frontend/README.md
+  s_bcf3aecf568e05::t_b200d016548756 1,3-5,7,10-11,14,16,18-24,26,28-40,42,44-47
+frontend/src/components/ResearchForm.tsx
+  s_bcf3aecf568e05::t_b8ee9e266edf6b 5-8,11-20,22-25,27-31,33,36,38-44,47-81,84-110
+frontend/src/app/layout.tsx
+  s_bcf3aecf568e05::t_c631127dc7cc06 2,6-7,12,15
+frontend/package.json
+  s_bcf3aecf568e05::t_0daf735ebf2c04 14-15
+frontend/src/types/research.ts
+  s_bcf3aecf568e05::t_69b1d6e484e01f 1-69
+frontend/src/app/page.tsx
+  s_bcf3aecf568e05::t_c0baee20800f8c 81-97,118
+  s_bcf3aecf568e05::t_aa140352430a8f 18-23
+  s_bcf3aecf568e05::t_97c8e09cd697d4 347,349
+  s_bcf3aecf568e05::t_5ec4780983629f 3-4,6-17,25-30,33,35-41,43-51,53-57,59-77,98-117,119-167,169-237,239-244,247-262,264,269-276,278-330,334-346,348,350-355
+  s_bcf3aecf568e05::t_4d09a65e975f68 263,265-268
+frontend/src/components/ResearchProgress.tsx
+  s_bcf3aecf568e05::t_bc4611fa4cb075 1-106
+frontend/src/components/History.tsx
+  s_bcf3aecf568e05::t_64a4263acec24f 5-6,8-16,19-20,22-37,40-44,46-90,92-100,102-105
+frontend/package-lock.json
+  s_bcf3aecf568e05::t_ee5d6a55e37b84 13-14,1598-1606,1613-1630,1645-1659,1690-1695,1992-1997,2609-2618,2777-2786,2804-2843,2870-2879,2993-3005,3049-3057,3068-3080,3552,3758-3767,3778-3783,4216-4255,4273-4282,4320-4325,4341-4364,4523-4532,4608-4617,4671-4682,5291-5300,5344-5347,5349-5365,5368-5371,5374-5379,5381-5383,5386-5390,5392-5403,5405-5407,5410-5413,5415-5422,5424-5425,5428-5431,5433-5435,5437-6031,6371-6395,6503-6512,6574-6600,6645-6677,7048-7057,7193-7206,7230-7247,7380-7399,7600-7686,7766-7793,7952-7961
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "65da18089051b55a8724185642b91a96075049f7",
+  "prompts": {},
+  "humans": {
+    "h_c5a3d01edfee72": {
+      "author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_bcf3aecf568e05": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ebc9c1606ffeTVgDXSPLwRYebt",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
