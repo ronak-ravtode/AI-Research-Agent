@@ -2,76 +2,111 @@
 
 import { useState } from "react";
 
-interface Props {
-  onSubmit: (query: string, depth: string) => void;
-  loading: boolean;
-}
-
-const DEPTH_OPTIONS = [
-  { value: "quick", label: "Quick", desc: "~1 iteration, 3-5 sources" },
-  { value: "standard", label: "Standard", desc: "~2 iterations, 8-15 sources" },
-  { value: "deep", label: "Deep", desc: "~4 iterations, 15-25 sources" },
+const SAMPLE_QUESTIONS = [
+  "What are the main cybersecurity risks of generative AI?",
+  "How do retrieval-augmented generation systems work?",
+  "What evidence exists for the impact of remote work on productivity?",
 ];
 
-export default function ResearchForm({ onSubmit, loading }: Props) {
-  const [query, setQuery] = useState("");
-  const [depth, setDepth] = useState("standard");
+const MIN_LENGTH = 10;
+const MAX_LENGTH = 2000;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (query.trim().length >= 10 && !loading) {
-      onSubmit(query.trim(), depth);
+export default function ResearchForm({
+  onSubmit,
+  disabled,
+}: {
+  onSubmit: (query: string) => void;
+  disabled: boolean;
+}) {
+  const [query, setQuery] = useState("");
+  const trimmed = query.trim();
+  const tooShort = trimmed.length < MIN_LENGTH;
+  const tooLong = query.length > MAX_LENGTH;
+  const canSubmit = !tooShort && !tooLong && !disabled;
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    // Enter inserts a newline; only the explicit chord submits.
+    if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      if (canSubmit) onSubmit(trimmed);
     }
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <section aria-labelledby="ask-heading" className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
-          Research Question
-        </label>
-        <textarea
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g. What is the impact of generative AI on software development?"
-          rows={3}
-          className="w-full px-3 py-2 bg-[#1a1a1a] border border-gray-700 rounded-lg text-[#ededed] placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
-          disabled={loading}
-        />
-        <p className="text-xs text-gray-500 mt-1">{query.length}/2000 (min 10)</p>
+        <h2 id="ask-heading" className="text-lg font-semibold text-stone-900">
+          Ask a research question
+        </h2>
+        <p className="mt-1 text-sm text-stone-600">
+          The assistant plans searches, reads real web pages, and answers with numbered
+          citations you can open.
+        </p>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Research Depth
-        </label>
-        <div className="flex gap-2">
-          {DEPTH_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setDepth(opt.value)}
-              disabled={loading}
-              className={`flex-1 px-3 py-2 rounded-lg text-sm border transition-colors ${
-                depth === opt.value
-                  ? "bg-blue-600 border-blue-500 text-white"
-                  : "bg-[#1a1a1a] border-gray-700 text-gray-400 hover:border-gray-500"
-              }`}
-            >
-              <div className="font-medium">{opt.label}</div>
-              <div className="text-xs opacity-70">{opt.desc}</div>
-            </button>
-          ))}
+      <label htmlFor="research-question" className="sr-only">
+        Research question
+      </label>
+      <textarea
+        id="research-question"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        onKeyDown={handleKeyDown}
+        rows={4}
+        maxLength={MAX_LENGTH}
+        disabled={disabled}
+        placeholder="e.g. What are the main cybersecurity risks of generative AI?"
+        className="w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-[15px] leading-relaxed text-stone-900 shadow-sm outline-none transition placeholder:text-stone-400 focus:border-stone-500 focus:ring-2 focus:ring-stone-900/10 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-500"
+      />
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p
+          className={`text-xs ${
+            tooLong ? "text-red-700" : "text-stone-500"
+          }`}
+          aria-live="polite"
+        >
+          {trimmed.length < MIN_LENGTH
+            ? `At least ${MIN_LENGTH} characters`
+            : `${query.length} / ${MAX_LENGTH}`}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => onSubmit(trimmed)}
+          disabled={!canSubmit}
+          className="rounded-lg bg-stone-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-stone-900/20 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-stone-300"
+        >
+          {disabled ? "Researching…" : "Start research"}
+        </button>
+      </div>
+
+      <p className="text-xs text-stone-500">
+        Press <kbd className="rounded border border-stone-300 bg-stone-50 px-1">Ctrl</kbd>{" "}
+        + <kbd className="rounded border border-stone-300 bg-stone-50 px-1">Enter</kbd> to
+        start.
+      </p>
+
+      {!disabled && (
+        <div>
+          <h3 className="text-xs font-semibold tracking-wide text-stone-500 uppercase">
+            Try one of these
+          </h3>
+          <ul className="mt-2 flex flex-col gap-1.5">
+            {SAMPLE_QUESTIONS.map((sample) => (
+              <li key={sample}>
+                <button
+                  type="button"
+                  onClick={() => setQuery(sample)}
+                  className="w-full rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-left text-sm text-stone-700 transition hover:border-stone-400 hover:bg-white"
+                >
+                  {sample}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
-
-      <button
-        type="submit"
-        disabled={loading || query.trim().length < 10}
-        className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white font-medium rounded-lg transition-colors"
-      >
-        {loading ? "Researching..." : "Start Research"}
-      </button>
-    </form>
+      )}
+    </section>
   );
 }

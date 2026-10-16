@@ -1,56 +1,107 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getHistory, type HistoryItem } from "@/lib/api";
 
-interface Props {
+import { ApiError, getHistory } from "@/lib/api";
+import type { HistoryItem } from "@/types/research";
+
+export default function History({
+  onSelect,
+  activeId,
+}: {
   onSelect: (researchId: string) => void;
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  completed: "text-green-400",
-  failed: "text-red-400",
-  planning: "text-yellow-400",
-  researching: "text-blue-400",
-};
-
-export default function History({ onSelect }: Props) {
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  activeId: string | null;
+}) {
+  const [items, setItems] = useState<HistoryItem[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     getHistory()
-      .then((data) => setHistory(data.history))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .then((body) => {
+        if (!cancelled) setItems(body.history ?? []);
+      })
+      .catch((cause: unknown) => {
+        if (cancelled) return;
+        // A backend that is down must not look like an empty history.
+        setError(
+          cause instanceof ApiError
+            ? cause.message
+            : "Could not load history.",
+        );
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (loading) {
-    return <div className="text-gray-500 text-sm py-4">Loading history...</div>;
-  }
-
-  if (history.length === 0) {
-    return <div className="text-gray-500 text-sm py-4">No research history yet</div>;
-  }
-
   return (
-    <div className="space-y-2">
-      {history.map((item) => (
-        <button
-          key={item.research_id}
-          onClick={() => onSelect(item.research_id)}
-          className="w-full text-left bg-[#111] border border-gray-800 rounded-lg p-3 hover:border-gray-600 transition-colors"
-        >
-          <div className="text-sm font-medium truncate">{item.query}</div>
-          <div className="flex gap-3 mt-1 text-xs text-gray-500">
-            <span className={STATUS_COLORS[item.status] || "text-gray-400"}>
-              {item.status}
-            </span>
-            <span>{item.research_depth}</span>
-            <span>{item.created_at ? new Date(item.created_at).toLocaleString() : ""}</span>
-          </div>
-        </button>
-      ))}
-    </div>
+    <section aria-labelledby="history-heading" className="space-y-3">
+      <h2 id="history-heading" className="text-sm font-semibold text-stone-900">
+        Previous research
+      </h2>
+
+      {error ? (
+        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+          {error}
+        </p>
+      ) : items === null ? (
+        <p className="text-sm text-stone-500">Loading history…</p>
+      ) : items.length === 0 ? (
+        <p className="text-sm text-stone-500">
+          Nothing here yet. Your research will appear in this list.
+        </p>
+      ) : (
+        <ul className="space-y-1.5">
+          {items.map((item) => (
+            <li key={item.research_id}>
+              <button
+                type="button"
+                onClick={() => onSelect(item.research_id)}
+                aria-current={item.research_id === activeId ? "true" : undefined}
+                className={`w-full rounded-md border px-3 py-2 text-left transition ${
+                  item.research_id === activeId
+                    ? "border-stone-900 bg-stone-100"
+                    : "border-stone-200 bg-white hover:border-stone-400 hover:bg-stone-50"
+                }`}
+              >
+                <span className="line-clamp-2 block text-sm text-stone-800">
+                  {item.query}
+                </span>
+                <span className="mt-1 flex items-center gap-2 text-xs text-stone-500">
+                  <StatusDot status={item.status} />
+                  {item.status}
+                  {item.source_count > 0 && (
+                    <span>· {item.source_count} sources</span>
+                  )}
+                  {item.created_at && (
+                    <span>· {new Date(item.created_at).toLocaleDateString()}</span>
+                  )}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function StatusDot({ status }: { status: string }) {
+  const color =
+    status === "completed"
+      ? "bg-emerald-600"
+      : status === "failed"
+        ? "bg-red-600"
+        : status === "running"
+          ? "bg-blue-600"
+          : "bg-stone-400";
+  return (
+    <span
+      aria-hidden="true"
+      className={`inline-block h-1.5 w-1.5 rounded-full ${color}`}
+    />
   );
 }

@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend
 
-## Getting Started
+The research interface for the AI Research Assistant. One route (`/`) with four
+components. All requests go to `/api/*` on the same origin and are proxied to FastAPI by
+the rewrite in `next.config.ts`, so the browser never holds a provider key.
 
-First, run the development server:
+## Run
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The backend must be running on port 8000 for the proxy to resolve.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm start` | Serve the production build |
+| `npm run lint` | ESLint |
+| `npx tsc --noEmit` | Type check |
 
-## Learn More
+## Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  app/page.tsx                 view machine: idle | running | completed | failed
+  app/layout.tsx               shell + metadata
+  app/globals.css              research-paper theme and report typography
+  components/ResearchForm.tsx  question input, Ctrl/⌘+Enter, sample questions
+  components/ResearchProgress.tsx  activity timeline, reconnecting state
+  components/ResearchReport.tsx    Markdown answer, clickable citations, Copy answer
+  components/SourceList.tsx   source cards with Open source links
+  components/History.tsx       previous research
+  lib/api.ts                   typed API client + SSE helper
+  types/research.ts            response types
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Provider keys are backend-only. `lib/api.ts` sends nothing but the user's question.
+- Citations are rendered from text nodes after Markdown parsing, so existing link syntax
+  is never rewritten. Raw HTML from the model is disabled.
+- `react-markdown` is the only runtime dependency added for the report view.
