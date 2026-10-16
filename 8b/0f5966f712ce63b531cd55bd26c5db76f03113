@@ -1,0 +1,104 @@
+backend/pytest.ini
+  s_bcf3aecf568e05::t_07ffab90416375 1-6
+backend/app/core/logging.py
+  s_bcf3aecf568e05::t_d4377b72fc3ded 29-35
+backend/app/schemas/research.py
+  s_bcf3aecf568e05::t_5e7fbb3439b11f 7-8
+  s_bcf3aecf568e05::t_1b48855dbc5067 2,4,9-14,25-31,33-34
+backend/tests/test_api.py
+  s_bcf3aecf568e05::t_f28168c14fbe2a 1-3,5-15,18-20,22-86,89-105,108-109,111-125,128-147,150-154,156-165,168-186,188-202,207-220,223-236
+  s_bcf3aecf568e05::t_31ddb19d6fd996 16-17,21
+  s_bcf3aecf568e05::t_00e7dd845e1eff 87,106-107,126,148-149,166-167,203-205,221
+  s_bcf3aecf568e05::t_b6ca77dd869619 88,110,127,155,187,206,222
+backend/app/services/extraction.py
+  s_bcf3aecf568e05::t_01d7b34fe74022 1-74,77-174
+  s_bcf3aecf568e05::t_0f31a9a66604ad 75-76
+backend/app/schemas/source.py
+  s_bcf3aecf568e05::t_14f58555cbdb4f 2-4,12-15
+backend/app/api/sources.py
+  s_bcf3aecf568e05::t_75673d4413e318 4,6,8-9,14,16-17,19-20,23-37,46-48,51,53,55-64,68,72,76,80-84,87-88,91-109
+  s_bcf3aecf568e05::t_4b0597dd870e64 65-67,69-71,73-75,77-79,85-86,89-90
+backend/.env.example
+  s_bcf3aecf568e05::t_c8f84a1281c57e 1,3-6,8-10,12-13,15-23,27-28,30-41
+backend/app/services/research.py
+  s_bcf3aecf568e05::t_01d05220fecc20 1-13,15-16,18-22,24-30,32-41,48-51,53-57,60-69,71,73-83,86-96,98-105,107-110,112-183,185-217,219-227,229-231,233
+backend/tests/test_search.py
+  s_bcf3aecf568e05::t_35f511e9ef2055 1-133
+backend/app/services/report.py
+  s_bcf3aecf568e05::t_9c9bc218ba9ed2 10-11
+  s_bcf3aecf568e05::t_75523e03bf25a4 83-89,111
+  s_bcf3aecf568e05::t_f541a1c8713e47 1-9,12-82,90-110,112-172
+backend/app/services/search.py
+  s_bcf3aecf568e05::t_996b3336bdc825 1-83,88-161
+  s_bcf3aecf568e05::t_10ed3268d14585 84-87
+backend/requirements.txt
+  s_bcf3aecf568e05::t_5c09533559eb79 13-14
+backend/tests/test_research_service.py
+  s_bcf3aecf568e05::t_1fc56b71be5197 327-328,330-331
+  s_bcf3aecf568e05::t_d50cd2689e661f 17
+  s_bcf3aecf568e05::t_507679bab9f44d 169-170,172-175
+  s_bcf3aecf568e05::t_30edbc9b510624 1-5,7-16,18-79,84-87,90-168,171,177-289,291-295,300-304,306-315,319-320,322-323,325-326,337,339-341
+  s_bcf3aecf568e05::t_e5e11a6b1c206a 290,296-299,305,316-318,333-336
+  s_bcf3aecf568e05::t_3ecd90f9360bfd 176
+  s_bcf3aecf568e05::t_8ff1f7347bc83a 80-83
+  s_bcf3aecf568e05::t_5b29050b838f7d 321,329
+backend/app/core/exceptions.py
+  s_bcf3aecf568e05::t_1d81e1eea68fe3 1,3-7,10-11,13-15,17-18,20-49
+backend/app/api/research.py
+  s_bcf3aecf568e05::t_5c0261e0141dca 90,92
+  s_bcf3aecf568e05::t_cc3b617df5320a 129
+  s_bcf3aecf568e05::t_9776c8c64b63fc 182-193,196
+  s_bcf3aecf568e05::t_0f34ca3273c5c8 194
+  s_bcf3aecf568e05::t_855a9a09e60a4d 3,5,8-24,29-30,34-42,46,48-54,64-68,72,74-75,83-86,88,93,97-103,105-106,112-124,127-128,130,133-153,155-163,166-180,195,199-224
+  s_bcf3aecf568e05::t_67106854cd92e5 31
+  s_bcf3aecf568e05::t_6acd4e38741b10 33
+  s_bcf3aecf568e05::t_c0073c73ef2b2b 181
+backend/app/schemas/report.py
+  s_bcf3aecf568e05::t_860f2ef5a6c114 2,4,12,14
+backend/app/services/planning.py
+  s_bcf3aecf568e05::t_24e60e22cac9ba 1-72
+backend/app/core/config.py
+  s_bcf3aecf568e05::t_818c687479d0be 3-7,13-14,19,24,27-48
+  s_bcf3aecf568e05::t_91e18c3aa473ec 49
+backend/tests/test_extraction.py
+  s_bcf3aecf568e05::t_d29e4c7a444e33 84,87-92
+  s_bcf3aecf568e05::t_a82c951d4ea3af 13-14,20
+  s_bcf3aecf568e05::t_34b8c3af98c3f4 1-12,15-19,21-83,85-86,93-128
+backend/tests/test_sse.py
+  s_bcf3aecf568e05::t_9ac46c07954fc7 1-25,32-46,50-140,142-143,145-174,177-208
+  s_bcf3aecf568e05::t_dd32f00a05df24 26-31,47-49
+  s_bcf3aecf568e05::t_3bdda4a95eb2b6 175-176
+  s_bcf3aecf568e05::t_8552f0a2a4ff8a 141,144
+backend/app/database/models.py
+  s_bcf3aecf568e05::t_7ccccd227a853e 12,18-21,23,25-26,29-30,33-34,36-42,44-47,49-57,60-62,69,71-74,79-80,82-83,85,90-93,100,102-105,108-109,114,118-125,127,129-132,134-136,138,141
+backend/tests/conftest.py
+  s_bcf3aecf568e05::t_7e5530a322b03e 5,11-15,22
+  s_bcf3aecf568e05::t_288bb3352b2ff7 2-3,6,8-10,16-19,21,23-35
+backend/app/main.py
+  s_bcf3aecf568e05::t_d5cfadcb9bf147 1-2,5-6,9,16-22,27,31-32,36-38,48
+backend/tests/test_report.py
+  s_bcf3aecf568e05::t_0a64e24a00c2b4 1-14,16-20,22-105,107-186
+  s_bcf3aecf568e05::t_1af0ad7b7b77d2 106
+  s_bcf3aecf568e05::t_ed9eb03f63db7a 15,21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8b0f5966f712ce63b531cd55bd26c5db76f03113",
+  "prompts": {},
+  "humans": {
+    "h_c5a3d01edfee72": {
+      "author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_bcf3aecf568e05": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ebc9c1606ffeTVgDXSPLwRYebt",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
