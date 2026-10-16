@@ -8,9 +8,11 @@ import type { HistoryItem } from "@/types/research";
 export default function History({
   onSelect,
   activeId,
+  refreshTrigger,
 }: {
   onSelect: (researchId: string) => void;
   activeId: string | null;
+  refreshTrigger?: number;
 }) {
   const [items, setItems] = useState<HistoryItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,24 +20,32 @@ export default function History({
   useEffect(() => {
     let cancelled = false;
 
-    getHistory()
-      .then((body) => {
-        if (!cancelled) setItems(body.history ?? []);
-      })
-      .catch((cause: unknown) => {
-        if (cancelled) return;
-        // A backend that is down must not look like an empty history.
-        setError(
-          cause instanceof ApiError
-            ? cause.message
-            : "Could not load history.",
-        );
-      });
+    const fetchHistory = () => {
+      getHistory()
+        .then((body) => {
+          if (!cancelled) {
+            setItems(body.history ?? []);
+            setError(null);
+          }
+        })
+        .catch((cause: unknown) => {
+          if (cancelled) return;
+          setError(
+            cause instanceof ApiError
+              ? cause.message
+              : "Could not load history.",
+          );
+        });
+    };
+
+    fetchHistory();
+    const interval = setInterval(fetchHistory, 5000);
 
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
-  }, []);
+  }, [refreshTrigger]);
 
   return (
     <section aria-labelledby="history-heading" className="space-y-3">

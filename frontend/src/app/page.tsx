@@ -39,6 +39,7 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [reconnecting, setReconnecting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [historyRefresh, setHistoryRefresh] = useState(0);
 
   const closeStreamRef = useRef<(() => void) | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -82,6 +83,7 @@ export default function Home() {
   const finish = useCallback(
     async (id: string, status: ResearchStatus, error?: string | null) => {
       stopStream();
+      setHistoryRefresh((n) => n + 1);
       if (status === "completed") {
         await loadResult(id);
         setView("completed");
@@ -135,6 +137,7 @@ export default function Home() {
       try {
         const { research_id } = await startResearch(trimmed);
         setResearchId(research_id);
+        setHistoryRefresh((n) => n + 1);
         setEvents([
           {
             stage: "queued",
@@ -142,6 +145,9 @@ export default function Home() {
             at: new Date().toISOString(),
           },
         ]);
+
+        // Start polling alongside stream as a reliable backstop
+        startPolling(research_id);
 
         closeStreamRef.current = streamResearch(research_id, {
           onStage: (event) =>
@@ -325,7 +331,11 @@ export default function Home() {
         </main>
 
         <aside className="min-w-0">
-          <History onSelect={handleSelect} activeId={researchId} />
+          <History
+            onSelect={handleSelect}
+            activeId={researchId}
+            refreshTrigger={historyRefresh}
+          />
         </aside>
       </div>
     </div>

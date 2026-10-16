@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     APP_ENV: str = "development"
     APP_NAME: str = "ai-research-assistant"
+    SQL_ECHO: bool = False
 
     GROQ_API_KEY: str = ""
     GROQ_MODEL: str = "openai/gpt-oss-120b"

@@ -39,7 +39,7 @@ def _get_engine():
         db_url = _normalize_db_url(settings.DATABASE_URL)
         _engine = create_async_engine(
             db_url,
-            echo=settings.APP_ENV == "development",
+            echo=settings.SQL_ECHO,
             # Fail fast instead of hanging a request on an unreachable cloud database.
             connect_args={**_connect_args(db_url), "timeout": 10, "command_timeout": 30},
         )

@@ -19,14 +19,13 @@ class StructuredLogger:
         self.logger.propagate = False
 
     def _emit(self, level: str, message: str, data: dict = None, exc_info=None) -> None:
-        entry = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "level": level,
-            "message": message,
-            "data": data or {},
-        }
         log = getattr(self.logger, level.lower())
-        log(json.dumps(entry, default=str), exc_info=exc_info)
+        extra = ""
+        if data:
+            non_empty = {k: v for k, v in data.items() if v not in (None, [], {})}
+            if non_empty:
+                extra = " " + " ".join(f"{k}={v}" for k, v in non_empty.items())
+        log(f"[{level}] {message}{extra}", exc_info=exc_info)
         for handler in self.logger.handlers:
             handler.flush()
 
