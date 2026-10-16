@@ -1,0 +1,24 @@
+docs/superpowers/specs/2026-10-16-simplified-research-workspace-design.md
+  s_bcf3aecf568e05::t_dc04077e18eec0 1-196
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2c1a1d97b9b127dc0351f87c4732ca15e3262a91",
+  "prompts": {},
+  "humans": {
+    "h_c5a3d01edfee72": {
+      "author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_bcf3aecf568e05": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ebc9c1606ffeTVgDXSPLwRYebt",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
