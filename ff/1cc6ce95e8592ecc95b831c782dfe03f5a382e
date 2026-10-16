@@ -1,0 +1,26 @@
+frontend/next.config.ts
+  s_e94f14f633bc99::t_bccab15999727d 5,9
+frontend/src/app/layout.tsx
+  s_e94f14f633bc99::t_a76a03183809d7 14-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ff1cc6ce95e8592ecc95b831c782dfe03f5a382e",
+  "prompts": {},
+  "humans": {
+    "h_c5a3d01edfee72": {
+      "author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_e94f14f633bc99": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f3843b23dffewyJ7F2OoBTkzIZ",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
