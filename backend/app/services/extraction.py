@@ -67,10 +67,18 @@ def classify_source_type(url: str, title: str = "") -> str:
     return "Web article"
 
 
+# Firecrawl annotates scraped markdown with markers such as 【2†L1-L4】 that point at
+# links inside that one page. Those line references are meaningless once several pages are
+# read together, and models copy them verbatim into the answer, displacing the real [n]
+# citations. They are removed from every source before the model sees it.
+FIRECRAWL_MARKER_RE = re.compile(r"【\d+†[^】]*】[ \t]*")
+
+
 def clean_page_text(text: str) -> str:
-    """Collapse the boilerplate Firecrawl leaves in scraped markdown."""
+    """Drop Firecrawl's inline link markers and collapse scraped boilerplate."""
     if not text:
         return ""
+    text = FIRECRAWL_MARKER_RE.sub("", text)
     text = re.sub(r"[ \t]{2,}", " ", text)
     text = "\n".join(line.rstrip() for line in text.splitlines())
     text = re.sub(r"\n{3,}", "\n\n", text)
@@ -81,6 +89,7 @@ class ExtractionService:
     def __init__(self):
         settings = get_settings()
         self._api_key = settings.FIRECRAWL_API_KEY
+        self._client = None
         self.max_sources = settings.MAX_EXTRACT_SOURCES
         self.max_source_chars = settings.MAX_SOURCE_CHARS
 
@@ -151,24 +160,20 @@ class ExtractionService:
         )
 
     async def _scrape(self, url: str) -> str:
-        """Scrape one URL. Firecrawl's SDK is synchronous, so it runs on a worker thread."""
-        loop = asyncio.get_running_loop()
-        return await asyncio.wait_for(
-            loop.run_in_executor(None, self._scrape_sync, url),
+        """Scrape one URL to markdown, bounded by SCRAPE_TIMEOUT."""
+        if self._client is None:
+            # Constructed lazily so importing this module never requires a key.
+            from firecrawl import AsyncV1FirecrawlApp
+
+            self._client = AsyncV1FirecrawlApp(api_key=self._api_key)
+
+        response = await asyncio.wait_for(
+            self._client.scrape_url(
+                url, formats=["markdown"], only_main_content=True
+            ),
             timeout=get_settings().SCRAPE_TIMEOUT,
         )
-
-    def _scrape_sync(self, url: str) -> str:
-        from firecrawl import FirecrawlApp
-
-        app = getattr(self, "_firecrawl_app", None)
-        if app is None:
-            app = FirecrawlApp(api_key=self._api_key)
-            self._firecrawl_app = app
-        result = app.scrape_url(url, params={"formats": ["markdown"]})
-        if not isinstance(result, dict):
-            return ""
-        return result.get("markdown") or result.get("content") or ""
+        return getattr(response, "markdown", None) or ""
 
 
 extraction_service = ExtractionService()

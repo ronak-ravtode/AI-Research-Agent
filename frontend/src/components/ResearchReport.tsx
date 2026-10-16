@@ -6,7 +6,9 @@ import ReactMarkdown from "react-markdown";
 import { sourceAnchor } from "./SourceList";
 import type { Source } from "@/types/research";
 
-const CITATION = /\[(\d{1,3})\]/g;
+// Match ASCII and fullwidth citation brackets; the backend normalises these, but
+// accepting both here keeps an older saved report readable too.
+const CITATION = /[【［〔]\s*(\d{1,3})\s*[】］〕]/g;
 
 /** Short, honest caveat shown above every answer. */
 export default function ResearchReport({

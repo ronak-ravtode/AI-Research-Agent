@@ -39,11 +39,11 @@ class ResearchSession(Base):
     current_stage = Column(String(50), nullable=True)
     progress_message = Column(Text, nullable=True)
     error_message = Column(Text, nullable=True)
-    started_at = Column(DateTime, nullable=True)
-    completed_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=_utcnow)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
     updated_at = Column(
-        DateTime, nullable=False, default=_utcnow, onupdate=_utcnow
+        DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow
     )
 
     sources = relationship(
@@ -81,8 +81,8 @@ class Source(Base):
     content = Column(Text, nullable=True)
     retrieval_method = Column(String(20), nullable=False, default=RETRIEVAL_SNIPPET)
     search_score = Column(Float, nullable=False, default=0.0)
-    retrieved_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=_utcnow)
+    retrieved_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
 
     session = relationship("ResearchSession", back_populates="sources")
 
@@ -106,7 +106,7 @@ class Report(Base):
     )
     title = Column(String(500), nullable=False)
     answer_markdown = Column(Text, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=_utcnow)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
 
     session = relationship("ResearchSession", back_populates="reports")
 
@@ -133,7 +133,7 @@ class ResearchActivity(Base):
     )
     stage = Column(String(50), nullable=False)
     message = Column(Text, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=_utcnow)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
 
     session = relationship("ResearchSession", back_populates="activity")
 

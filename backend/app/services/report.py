@@ -24,8 +24,8 @@ SYSTEM_PROMPT = (
     "You are a careful research assistant. You answer using ONLY the numbered source "
     "material provided to you.\n"
     "Rules:\n"
-    "- Cite every factual claim with the matching source number in square brackets, "
-    "for example [2].\n"
+    "- Cite every factual claim with the matching source number in ASCII square "
+    "brackets, for example [2]. Use no other bracket style.\n"
     "- Never invent a source number that is not in the provided list.\n"
     "- Never write URLs, links, or a reference list; those are added separately.\n"
     "- If the material does not establish something, say so plainly instead of guessing.\n"
@@ -42,7 +42,13 @@ SYSTEM_PROMPT = (
     "Two or three sentences."
 )
 
-CITATION_RE = re.compile(r"\[(\d{1,3})\]")
+# Citation brackets. Models do not all emit ASCII: `openai/gpt-oss-120b` writes 【3】 and
+# often the Firecrawl-style 【3†L1-L4】. Only the source number is meaningful here, so every
+# recognised form is normalised to ASCII [3] and the frontend has one form to linkify.
+# The lookahead keeps Markdown links such as [1](https://...) intact.
+CITATION_RE = re.compile(
+    r"[\[【［〔]\s*(\d{1,3})\s*(?:†[^\]】］〕]*)?\s*[\]】］〕](?!\()"
+)
 
 
 @dataclass
@@ -80,7 +86,7 @@ def build_source_material(sources: list[RetrievedSource]) -> str:
 
 
 def validate_citations(body: str, source_count: int) -> str:
-    """Remove citation numbers that point at no real source.
+    """Normalise citation brackets and remove any that point at no real source.
 
     Surviving numbers are deliberately **not** renumbered. The reference list is built from
     the stored sources in their own order, so `[7]` must keep meaning the 7th stored
@@ -92,16 +98,25 @@ def validate_citations(body: str, source_count: int) -> str:
         return CITATION_RE.sub("", body)
 
     dropped: set[int] = set()
+    normalised = 0
 
     def replace(match: re.Match) -> str:
+        nonlocal normalised
         number = int(match.group(1))
-        if 1 <= number <= source_count:
-            return match.group(0)
-        dropped.add(number)
-        return ""
+        if not 1 <= number <= source_count:
+            dropped.add(number)
+            return ""
+        if match.group(0) != f"[{number}]":
+            normalised += 1
+        return f"[{number}]"
 
     cleaned = CITATION_RE.sub(replace, body)
 
+    if normalised:
+        logger.info(
+            "Normalised citation bracket style",
+            data={"converted": normalised},
+        )
     if dropped:
         logger.warning(
             "Removed citations that pointed at no retrieved source",

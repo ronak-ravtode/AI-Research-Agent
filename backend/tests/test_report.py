@@ -184,3 +184,44 @@ def test_title_is_derived_from_the_question():
     long = "word " * 60
     assert len(_derive_title(long)) <= 90
     assert _derive_title("  ") == "Research Report"
+
+def test_fullwidth_citation_brackets_are_normalised():
+    """openai/gpt-oss-120b writes 【3】; it must still become a real citation."""
+    out = validate_citations("Fact one 【1】. Fact two 【3】.", 3)
+    assert "[1]" in out and "[3]" in out
+    assert "【" not in out
+
+
+def test_fullwidth_citation_out_of_range_is_removed():
+    out = validate_citations("Real 【1】. Invented 【77】.", 2)
+    assert "[1]" in out
+    assert "77" not in out
+
+
+def test_mixed_bracket_styles_are_normalised_together():
+    out = validate_citations("A [1] B 【2】 C ［3］", 3)
+    assert "[1]" in out and "[2]" in out and "[3]" in out
+
+
+def test_markdown_links_are_not_mangled_by_citation_normalising():
+    body = "See [1](https://example.com/page) for details."
+    assert validate_citations(body, 3) == body
+
+
+def test_firecrawl_style_citation_markers_become_real_citations():
+    """The model emits 【2†L1-L4】 on its own; it must resolve to source 2."""
+    out = validate_citations("Risk A 【1†L1-L9】 and risk B 【3†L2-L4】.", 3)
+    assert "[1]" in out and "[3]" in out
+    assert "†" not in out
+
+
+def test_firecrawl_style_marker_out_of_range_is_removed():
+    out = validate_citations("Real 【1†L1-L4】. Invented 【42†L1-L9】.", 2)
+    assert "[1]" in out
+    assert "42" not in out and "†" not in out
+
+
+def test_all_citation_forms_together():
+    out = validate_citations("A [1] B 【2†Lx】 C 【3】 D [4]", 4)
+    assert "[1]" in out and "[2]" in out and "[3]" in out and "[4]" in out
+
