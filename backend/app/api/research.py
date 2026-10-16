@@ -68,7 +68,7 @@ async def start_research(
         progress_message="Queued",
     )
     db.add(session)
-    await db.flush()
+    await db.commit()
     research_id = str(session.id)
 
     background_tasks.add_task(_run_in_background, research_id)

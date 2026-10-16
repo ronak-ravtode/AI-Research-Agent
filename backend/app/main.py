@@ -14,6 +14,7 @@ from app.api import health, research, sources
 from app.core.config import get_settings
 from app.core.logging import logger
 from app.database.database import Base, _get_engine
+from app.database.migrations import sync_schema
 
 settings = get_settings()
 
@@ -57,7 +58,9 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.begin() as conn:
             await conn.execute(text("SELECT 1"))
-            await conn.run_sync(Base.metadata.create_all)
+            # create_all only creates missing tables; sync_schema also adds columns an
+            # older deployment is missing and fixes naive timestamp types.
+            applied = await sync_schema(conn)
     except Exception as exc:
         # An unreachable database is a configuration mistake, not a crash to debug
         # through a stack trace. Say what to check, then stop.
@@ -72,6 +75,8 @@ async def lifespan(app: FastAPI):
         # the useful output, and the raw driver stack trace only buries it.
         raise SystemExit(1) from None
 
+    if applied:
+        logger.info("Applied schema changes", data={"changes": applied})
     logger.info("Database schema ready")
 
     yield
