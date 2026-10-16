@@ -1,0 +1,31 @@
+backend/app/services/research.py
+  s_bcf3aecf568e05::t_2241549c26d97e 49,51-68,70-72,75,77-78,80-84,86,88-109,111-118,120-123
+  s_bcf3aecf568e05::t_b58f929b751497 205,223,228-230,235
+backend/app/core/logging.py
+  s_bcf3aecf568e05::t_08e28c9d459866 14-16,19,21-22,28-31,34,42,45,48
+backend/tests/test_research_service.py
+  s_bcf3aecf568e05::t_da50a35d3e5971 309-310,313-344
+backend/app/api/health.py
+  s_bcf3aecf568e05::t_f464df52fab55d 2,13-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3b35a5a94c2fb86e609508c44543c73840b5bc94",
+  "prompts": {},
+  "humans": {
+    "h_c5a3d01edfee72": {
+      "author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_bcf3aecf568e05": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_ebc9c1606ffeTVgDXSPLwRYebt",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
