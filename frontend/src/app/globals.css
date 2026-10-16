@@ -1,16 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
-    "Times New Roman", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
 }
 
 :root {
   color-scheme: light;
-  --background: #faf9f7;
-  --foreground: #1c1917;
+  --background: #ffffff;
+  --foreground: #0f172a;
 }
 
 body {
@@ -18,48 +16,88 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Citation anchor target highlight */
+:target {
+  animation: target-fade 2s ease-out;
+}
+
+@keyframes target-fade {
+  0% {
+    background-color: #fef08a;
+    border-color: #eab308;
+    transform: scale(1.01);
+  }
+  100% {
+    background-color: inherit;
+    border-color: inherit;
+    transform: scale(1);
+  }
 }
 
 /*
- * Report typography. Hand-rolled rather than pulling in @tailwindcss/typography, so the
- * reading measure and rhythm are exactly what a research paper needs.
+ * Report typography for the research answer.
  */
 .prose-paper {
   font-family: var(--font-serif);
   font-size: 1.0625rem;
-  line-height: 1.75;
-  color: #292524;
-  max-width: 68ch;
+  line-height: 1.8;
+  color: #1e293b;
+  max-width: 72ch;
 }
 
 .prose-paper > * + * {
-  margin-top: 1.15em;
+  margin-top: 1.25em;
 }
 
 .prose-paper h1 {
   font-family: var(--font-sans);
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.6rem;
+  font-weight: 700;
   line-height: 1.3;
   margin-top: 1.8em;
-  color: #1c1917;
+  color: #0f172a;
+  letter-spacing: -0.02em;
 }
 
 .prose-paper h2 {
   font-family: var(--font-sans);
-  font-size: 1.2rem;
+  font-size: 1.28rem;
   font-weight: 600;
   line-height: 1.35;
-  margin-top: 1.7em;
-  color: #1c1917;
+  margin-top: 1.6em;
+  color: #0f172a;
+  letter-spacing: -0.01em;
 }
 
 .prose-paper h3 {
   font-family: var(--font-sans);
-  font-size: 1.02rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  margin-top: 1.5em;
-  color: #292524;
+  margin-top: 1.4em;
+  color: #1e293b;
+}
+
+.prose-paper p {
+  color: #334155;
 }
 
 .prose-paper ul,
@@ -80,62 +118,74 @@ body {
 }
 
 .prose-paper a {
-  color: #1d4ed8;
+  color: #2563eb;
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.prose-paper a:hover {
+  color: #1d4ed8;
 }
 
 .prose-paper strong {
   font-weight: 600;
-  color: #1c1917;
+  color: #0f172a;
 }
 
 .prose-paper blockquote {
-  border-left: 3px solid #d6d3d1;
-  padding-left: 1em;
-  color: #57534e;
+  border-left: 3px solid #cbd5e1;
+  padding-left: 1.2em;
+  color: #475569;
   font-style: italic;
+  margin: 1.5em 0;
 }
 
 .prose-paper code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.9em;
-  background: #f5f5f4;
-  border-radius: 3px;
-  padding: 0.1em 0.3em;
+  font-size: 0.88em;
+  background: #f1f5f9;
+  color: #0f172a;
+  border-radius: 4px;
+  padding: 0.15em 0.35em;
+  border: 1px solid #e2e8f0;
 }
 
 .prose-paper pre {
-  background: #292524;
-  color: #fafaf9;
-  border-radius: 0.5rem;
-  padding: 1rem;
+  background: #0f172a;
+  color: #f8fafc;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
   overflow-x: auto;
-  font-size: 0.85rem;
-  line-height: 1.6;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
 .prose-paper pre code {
   background: none;
   padding: 0;
   color: inherit;
+  border: none;
 }
 
 .prose-paper table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95em;
+  margin: 1.5em 0;
 }
 
 .prose-paper th,
 .prose-paper td {
-  border: 1px solid #e7e5e4;
-  padding: 0.5em 0.7em;
+  border: 1px solid #e2e8f0;
+  padding: 0.6em 0.85em;
   text-align: left;
 }
 
 .prose-paper th {
-  background: #f5f5f4;
+  background: #f8fafc;
   font-family: var(--font-sans);
   font-weight: 600;
+  color: #0f172a;
 }

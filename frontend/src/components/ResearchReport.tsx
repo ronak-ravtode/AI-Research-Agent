@@ -1,16 +1,14 @@
 "use client";
 
-import { Children, type ReactNode } from "react";
+import { Children, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 
 import { sourceAnchor } from "./SourceList";
 import type { Source } from "@/types/research";
 
-// Match ASCII and fullwidth citation brackets; the backend normalises these, but
-// accepting both here keeps an older saved report readable too.
+// Match ASCII and fullwidth citation brackets
 const CITATION = /[【［〔]\s*(\d{1,3})\s*[】］〕]/g;
 
-/** Short, honest caveat shown above every answer. */
 export default function ResearchReport({
   title,
   markdown,
@@ -20,37 +18,71 @@ export default function ResearchReport({
   markdown: string;
   sources: Source[];
 }) {
+  const [copied, setCopied] = useState(false);
+
   async function copyAnswer() {
     try {
       await navigator.clipboard.writeText(markdown);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch {
       // Clipboard access can be denied; the answer is on screen regardless.
     }
   }
 
   return (
-    <section aria-labelledby="report-heading" className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <h2 id="report-heading" className="text-xl font-semibold text-stone-900">
-          {title}
-        </h2>
+    <article aria-labelledby="report-heading" className="space-y-5">
+      {/* Report Header */}
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-zinc-200/80 pb-4">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-medium text-zinc-500 mb-1">
+            <span className="flex h-4 w-4 items-center justify-center rounded bg-blue-100 text-[10px] text-blue-700">
+              AI
+            </span>
+            <span>Synthesized Research Report · {sources.length} sources</span>
+          </div>
+          <h2 id="report-heading" className="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">
+            {title}
+          </h2>
+        </div>
+
         <button
           type="button"
           onClick={copyAnswer}
-          className="shrink-0 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition hover:border-stone-500 hover:bg-stone-50"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition hover:border-zinc-400 hover:bg-zinc-50 active:scale-95"
         >
-          Copy answer
+          {copied ? (
+            <>
+              <svg className="h-3.5 w-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-emerald-700">Copied!</span>
+            </>
+          ) : (
+            <>
+              <svg className="h-3.5 w-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <span>Copy answer</span>
+            </>
+          )}
         </button>
       </div>
 
-      <p className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-xs leading-relaxed text-stone-600">
-        Citations link to the sources that were actually retrieved. They make the answer
-        easier to check; they do not guarantee every claim is true.
-      </p>
+      {/* Honest Caveat Banner */}
+      <div className="flex items-start gap-2.5 rounded-xl border border-zinc-200/90 bg-zinc-50/70 p-3.5 text-xs leading-relaxed text-zinc-600">
+        <svg className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p>
+          Citations link directly to retrieved sources. They make claims easy to inspect and
+          verify, but do not replace independent critical judgment.
+        </p>
+      </div>
 
-      <article className="prose-paper">
+      {/* Markdown Body */}
+      <div className="prose-paper pt-2">
         <ReactMarkdown
-          // Raw HTML is never enabled, so model output cannot inject markup.
           components={{
             p: ({ children }) => <p>{linkifyCitations(children, sources)}</p>,
             li: ({ children }) => <li>{linkifyCitations(children, sources)}</li>,
@@ -59,16 +91,13 @@ export default function ResearchReport({
         >
           {markdown}
         </ReactMarkdown>
-      </article>
-    </section>
+      </div>
+    </article>
   );
 }
 
 /**
- * Replace `[n]` in text nodes with a link to the matching source card.
- *
- * Walking rendered children rather than rewriting the Markdown means link syntax that is
- * already in the text (`[Title](url)`) is left completely alone.
+ * Replace `[n]` in text nodes with a clickable badge linking to the matching source card.
  */
 function linkifyCitations(children: ReactNode, sources: Source[]): ReactNode {
   return Children.map(children, (child) => {
@@ -78,8 +107,6 @@ function linkifyCitations(children: ReactNode, sources: Source[]): ReactNode {
     if (parts.length === 1) return child;
 
     return parts.map((part, index) => {
-      // With a capture group, split() alternates text, capture, text, capture...
-      // Odd indices are the captured citation number itself.
       if (index % 2 === 0) return part;
 
       const number = Number(part);
@@ -91,16 +118,14 @@ function linkifyCitations(children: ReactNode, sources: Source[]): ReactNode {
           key={`${number}-${index}`}
           href={`#${sourceAnchor(source.id)}`}
           onClick={(event) => {
-            // Scroll the card into view and give it a brief highlight.
             event.preventDefault();
-            document
-              .getElementById(sourceAnchor(source.id))
-              ?.scrollIntoView({ behavior: "smooth", block: "center" });
+            const el = document.getElementById(sourceAnchor(source.id));
+            el?.scrollIntoView({ behavior: "smooth", block: "center" });
           }}
           title={source.title}
-          className="mx-0.5 inline-flex min-w-[1.4rem] items-center justify-center rounded bg-stone-900 px-1 py-px align-baseline text-[0.7rem] font-semibold text-white no-underline hover:bg-stone-700"
+          className="mx-0.5 inline-flex items-center justify-center rounded-md bg-blue-50 px-1.5 py-0.5 align-baseline text-[11px] font-semibold text-blue-700 ring-1 ring-inset ring-blue-700/20 no-underline transition hover:bg-blue-600 hover:text-white hover:ring-transparent"
         >
-          {number}
+          [{number}]
         </a>
       );
     });

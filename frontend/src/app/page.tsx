@@ -40,9 +40,11 @@ export default function Home() {
   const [reconnecting, setReconnecting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [historyRefresh, setHistoryRefresh] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const closeStreamRef = useRef<(() => void) | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const stopStream = useCallback(() => {
     closeStreamRef.current?.();
@@ -54,8 +56,19 @@ export default function Home() {
     setReconnecting(false);
   }, []);
 
-  // Never leave a stream running after the page unmounts.
   useEffect(() => stopStream, [stopStream]);
+
+  // Keyboard shortcut Ctrl+K for new research
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        handleNew();
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   /** Load everything a finished run needs. */
   const loadResult = useCallback(async (id: string) => {
@@ -97,7 +110,7 @@ export default function Home() {
     [loadResult, stopStream],
   );
 
-  /** Fallback used when the event stream cannot be relied on. */
+  /** Polling backstop to ensure UI never stalls. */
   const startPolling = useCallback(
     (id: string) => {
       if (pollRef.current) return;
@@ -112,7 +125,7 @@ export default function Home() {
               await finish(id, status.status, status.error_message);
             }
           } catch {
-            // Keep polling; the next tick may succeed.
+            // Keep polling; next tick may succeed
           }
         })();
       }, 2000);
@@ -146,12 +159,10 @@ export default function Home() {
           },
         ]);
 
-        // Start polling alongside stream as a reliable backstop
         startPolling(research_id);
 
         closeStreamRef.current = streamResearch(research_id, {
-          onStage: (event) =>
-            setEvents((prev) => appendEvent(prev, event)),
+          onStage: (event) => setEvents((prev) => appendEvent(prev, event)),
           onComplete: (event) => {
             void finish(research_id, event.status, event.message ?? null);
           },
@@ -210,12 +221,11 @@ export default function Home() {
           await loadResult(id);
           setView("completed");
         } else if (status.status === "failed") {
-          setErrorMessage(
-            status.error_message || "This research run failed.",
-          );
+          setErrorMessage(status.error_message || "This research run failed.");
           setView("failed");
         } else {
-          // Still running: attach to the live stream.
+          // Still running: attach stream & polling
+          startPolling(id);
           closeStreamRef.current = streamResearch(id, {
             onStage: (event) => setEvents((prev) => appendEvent(prev, event)),
             onComplete: (event) => {
@@ -250,99 +260,206 @@ export default function Home() {
   }, [stopStream]);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
-      <header className="border-b border-stone-200 pb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
-          AI Research Assistant
-        </h1>
-        <p className="mt-1 text-sm text-stone-600">
-          Web research with cited sources — every citation opens a real page.
-        </p>
-      </header>
+    <div className="flex h-screen w-full overflow-hidden bg-white text-zinc-900">
+      {/* 1. Left Sidebar (ChatGPT / Claude styled) */}
+      <aside
+        className={`${
+          sidebarOpen ? "w-72" : "w-0 -translate-x-full"
+        } relative z-30 flex h-full shrink-0 flex-col border-r border-zinc-800 bg-[#18181b] p-3 text-zinc-100 transition-all duration-300 ease-in-out lg:static lg:translate-x-0`}
+      >
+        {/* App Logo & Title */}
+        <div className="mb-4 flex items-center justify-between px-2 pt-1">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white shadow-md">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+              </svg>
+            </div>
+            <div>
+              <span className="block text-sm font-semibold tracking-tight text-white">
+                Research Agent
+              </span>
+              <span className="block text-[11px] text-zinc-400">
+                Cited Fact-Checking
+              </span>
+            </div>
+          </div>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <main className="min-w-0 space-y-8">
-          {view === "idle" && (
-            <ResearchForm onSubmit={handleSubmit} disabled={submitting} />
-          )}
+          {/* Close sidebar on mobile / small screen */}
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+            className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white lg:hidden"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-          {view === "running" && query && (
-            <>
-              <p className="text-sm leading-relaxed text-stone-600">
-                <span className="font-medium text-stone-900">Researching:</span>{" "}
-                {query}
-              </p>
-              <ResearchProgress
-                events={events}
-                reconnecting={reconnecting}
-                failed={false}
-              />
-              {sources.length > 0 && <SourceList sources={sources} />}
-            </>
-          )}
-
-          {view === "failed" && (
-            <section className="rounded-lg border border-red-200 bg-red-50 p-6">
-              <h2 className="text-lg font-semibold text-red-900">
-                Research could not be completed
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-red-800">
-                {errorMessage}
-              </p>
-              <div className="mt-4 flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleNew}
-                  className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-700"
-                >
-                  Try again
-                </button>
-              </div>
-            </section>
-          )}
-
-          {view === "completed" && result && (
-            <>
-              <ResearchProgress events={events} reconnecting={false} failed={false} />
-              <ResearchReport
-                title={result.title}
-                markdown={result.markdown}
-                sources={sources}
-              />
-              <SourceList sources={sources} />
-            </>
-          )}
-
-          {view === "completed" && !result && (
-            <p className="text-sm text-stone-600">
-              This research finished but produced no report.
-            </p>
-          )}
-
-          {view !== "idle" && (
-            <button
-              type="button"
-              onClick={handleNew}
-              className="text-sm font-medium text-stone-600 underline decoration-stone-300 underline-offset-4 hover:text-stone-900 hover:decoration-stone-900"
-            >
-              + New research
-            </button>
-          )}
-        </main>
-
-        <aside className="min-w-0">
+        {/* History Component inside Sidebar */}
+        <div className="flex-1 overflow-hidden">
           <History
             onSelect={handleSelect}
             activeId={researchId}
             refreshTrigger={historyRefresh}
+            onNew={handleNew}
           />
-        </aside>
+        </div>
+      </aside>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-20 bg-black/50 backdrop-blur-xs lg:hidden"
+        />
+      )}
+
+      {/* 2. Main Canvas / Chat Area */}
+      <div className="flex flex-1 flex-col h-full overflow-hidden bg-white">
+        {/* Top Navbar */}
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200/80 px-4 sm:px-6 bg-white/80 backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label="Toggle sidebar"
+              className="rounded-xl p-2 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+              </svg>
+            </button>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-zinc-900">
+                AI Research Assistant
+              </span>
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live Research Model
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {view !== "idle" && (
+              <button
+                type="button"
+                onClick={handleNew}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-xs transition hover:border-zinc-300 hover:bg-zinc-50"
+              >
+                <svg className="h-3.5 w-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>New research</span>
+              </button>
+            )}
+          </div>
+        </header>
+
+        {/* Scrollable Main Conversation / Report Stream */}
+        <div ref={scrollAreaRef} className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
+          <div className="mx-auto max-w-3xl space-y-8 pb-32">
+            {/* View: Idle (Claude / ChatGPT style welcome & input) */}
+            {view === "idle" && (
+              <ResearchForm onSubmit={handleSubmit} disabled={submitting} />
+            )}
+
+            {/* View: Running or Completed or Failed */}
+            {view !== "idle" && (
+              <>
+                {/* User Prompt Message Bubble (ChatGPT / Claude style) */}
+                <div className="flex items-start gap-3.5 rounded-2xl bg-zinc-50 p-4 border border-zinc-200/80 shadow-xs">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white shadow-xs">
+                    You
+                  </div>
+                  <div className="flex-1 pt-0.5">
+                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">
+                      Research Question
+                    </p>
+                    <p className="text-base font-medium text-zinc-900 leading-relaxed">
+                      {query}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Assistant Output Stream */}
+                <div className="space-y-6">
+                  {/* Research Activity Accordion / Timeline (Preserved exactly as user requested) */}
+                  <ResearchProgress
+                    events={events}
+                    reconnecting={reconnecting}
+                    failed={view === "failed"}
+                  />
+
+                  {/* Failed View Alert */}
+                  {view === "failed" && (
+                    <div className="rounded-2xl border border-red-200 bg-red-50/80 p-5 shadow-xs">
+                      <div className="flex items-center gap-2 text-red-900 font-semibold text-sm">
+                        <svg className="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Research could not be completed
+                      </div>
+                      <p className="mt-2 text-sm text-red-800 leading-relaxed">
+                        {errorMessage || "An unexpected error occurred during research."}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleNew}
+                        className="mt-4 rounded-xl bg-zinc-900 px-4 py-2 text-xs font-medium text-white shadow transition hover:bg-zinc-700"
+                      >
+                        Try another question
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Completed View: Full Markdown Report & Sources */}
+                  {view === "completed" && result && (
+                    <div className="space-y-8 pt-2">
+                      <ResearchReport
+                        title={result.title}
+                        markdown={result.markdown}
+                        sources={sources}
+                      />
+                      <SourceList sources={sources} />
+                    </div>
+                  )}
+
+                  {view === "completed" && !result && (
+                    <p className="text-sm text-zinc-500">
+                      Research completed but produced no text output.
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* 3. Floating Bottom Prompt Bar (when in running or completed state) */}
+        {view !== "idle" && (
+          <div className="pointer-events-none sticky bottom-0 z-20 w-full bg-gradient-to-t from-white via-white/95 to-transparent pt-6 pb-4 px-4 sm:px-8">
+            <div className="pointer-events-auto mx-auto max-w-3xl">
+              <ResearchForm
+                onSubmit={handleSubmit}
+                disabled={submitting}
+                compact={true}
+              />
+              <p className="mt-2 text-center text-[11px] text-zinc-400">
+                Autonomous AI Research Agent · Verifies claims against live web sources
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-/** Append an SSE event, ignoring a repeat of the message already on screen. */
 function appendEvent(prev: ActivityEvent[], event: ActivityEvent): ActivityEvent[] {
   const last = prev[prev.length - 1];
   if (last && last.stage === event.stage && last.message === event.message) {
@@ -351,7 +468,6 @@ function appendEvent(prev: ActivityEvent[], event: ActivityEvent): ActivityEvent
   return [...prev, event];
 }
 
-/** Append a stage derived from a polled status, same de-duplication rule. */
 function appendStage(
   prev: ActivityEvent[],
   status: ResearchStatusResponse,
