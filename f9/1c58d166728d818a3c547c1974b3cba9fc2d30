@@ -1,0 +1,129 @@
+backend/app/services/planning.py
+  s_0b31c8b65ed01e::t_32ccf0c178fdab 17-18,45-51,53,56
+backend/app/database/models.py
+  s_0b31c8b65ed01e::t_93257528543d1e 39-47
+eval-live-agentic-rest.csv
+  s_0b31c8b65ed01e::t_efdfc81844de05 1-7
+backend/tests/test_coverage.py
+  s_0b31c8b65ed01e::t_95e1c18b35722e 1-147
+backend/.env.example
+  s_0b31c8b65ed01e::t_9c142d0ff1ca38 42-44,47-51
+  s_0b31c8b65ed01e::t_428423ca83a203 45-46,52-54
+backend/tests/test_logging.py
+  s_0b31c8b65ed01e::t_d2c557a8c5cdc1 1-32
+backend/tests/test_api.py
+  s_0b31c8b65ed01e::t_652df7a5e0f021 2
+  s_0b31c8b65ed01e::t_ea79235cd66587 104
+  s_0b31c8b65ed01e::t_f9b79af78707c1 77-103,105-197
+backend/app/api/sources.py
+  s_0b31c8b65ed01e::t_ee1de689ea9587 102-106
+README.md
+  s_0b31c8b65ed01e::t_c9828ab12fab60 28-30,35-37
+  s_0b31c8b65ed01e::t_7d55c868863c3a 1-27,31-34,38-47,55-130,133-170
+  s_0b31c8b65ed01e::t_99aa90262cfaa0 48-54
+  s_0b31c8b65ed01e::t_6e32df9e3cb0f9 131-132
+backend/app/services/research.py
+  s_0b31c8b65ed01e::t_656a8ec108d424 76,80,82-85,106-126,163-215,217-245,300-301,326-444
+  s_0b31c8b65ed01e::t_3ff591a13f2f2f 128-162
+  s_0b31c8b65ed01e::t_d606a19646a3e3 247-299
+  s_0b31c8b65ed01e::t_a5e7b221b34f0f 127
+  s_0b31c8b65ed01e::t_9d02dea6963194 38
+  s_0b31c8b65ed01e::t_437fd49469312e 14,33,37,43,45
+  s_0b31c8b65ed01e::t_b1ba212bf805b8 246
+  s_0b31c8b65ed01e::t_c35f46c3802ada 445
+frontend/src/components/ResearchProgress.tsx
+  s_0b31c8b65ed01e::t_52f097f5485cf2 12,14,18-26
+frontend/src/lib/api.ts
+  s_0b31c8b65ed01e::t_073cb9c1243e42 59-64,68-71
+backend/app/services/report.py
+  s_0b31c8b65ed01e::t_2d387eae275c13 142-158,160-166,174-182,186,202,252-259,264-268
+  s_0b31c8b65ed01e::t_b9ce85220c74dc 204-219,221-251
+  s_0b31c8b65ed01e::t_cc7c46c629afd5 203
+  s_0b31c8b65ed01e::t_6a53096d0daffc 269
+frontend/src/components/History.tsx
+  s_0b31c8b65ed01e::t_cef91066993b6f 156-168,175-176
+  s_0b31c8b65ed01e::t_7f3db733be55e5 155
+  s_0b31c8b65ed01e::t_85e4b44f070c89 172-174
+frontend/src/app/page.tsx
+  s_0b31c8b65ed01e::t_8079d0b2368199 63-75,86
+  s_0b31c8b65ed01e::t_7a76576268432d 210
+  s_0b31c8b65ed01e::t_f19f7c8a9d14ef 430-456
+  s_0b31c8b65ed01e::t_1943759a3f244a 228-229
+  s_0b31c8b65ed01e::t_0ae36983fecfc6 157-160,168-169,173
+  s_0b31c8b65ed01e::t_b6b6b8b94f4901 96
+  s_0b31c8b65ed01e::t_87498fca63490f 44-45
+backend/tests/test_report.py
+  s_0b31c8b65ed01e::t_da5fb214ca481a 228-279
+backend/tests/test_verification.py
+  s_0b31c8b65ed01e::t_d092f85dcb1668 1-136
+eval-live-agentic.csv
+  s_0b31c8b65ed01e::t_473c5adbff694e 2-3
+  s_0b31c8b65ed01e::t_309f3a470995dc 1
+backend/app/services/verification.py
+  s_0b31c8b65ed01e::t_b6b3ec79f19831 1-132
+backend/scripts/evaluate.py
+  s_0b31c8b65ed01e::t_fbf5b7e6615741 28
+  s_0b31c8b65ed01e::t_35a66fd490c8d3 29
+  s_0b31c8b65ed01e::t_9799a95ef0fda7 54-58
+backend/app/schemas/research.py
+  s_0b31c8b65ed01e::t_58bdb965cbb8d6 15-18,33-34
+backend/app/schemas/report.py
+  s_0b31c8b65ed01e::t_78a397d2bd96da 11
+frontend/src/types/research.ts
+  s_0b31c8b65ed01e::t_674b9ee2ff0e3a 3-11
+  s_0b31c8b65ed01e::t_77e8e352906cb7 25-26
+  s_0b31c8b65ed01e::t_46c1e9292a2187 58
+docs/superpowers/specs/2026-10-23-agentic-upgrade-design.md
+  s_0b31c8b65ed01e::t_aa8a16ac01bae3 1-41,43-44,46-56,60-64,69-70,80-127,132-142,146-147
+  s_0b31c8b65ed01e::t_caafde52c83e88 128-131
+  s_0b31c8b65ed01e::t_dda621d103e8f8 42,45,57-59,65-68,71-79
+  s_0b31c8b65ed01e::t_22ecf335f795d9 143-145
+backend/app/api/research.py
+  s_0b31c8b65ed01e::t_439b6f4ac9df5a 42-54
+  s_0b31c8b65ed01e::t_ef94147f3fb565 13
+  s_0b31c8b65ed01e::t_8787fc37799461 130-133
+  s_0b31c8b65ed01e::t_a2f4b18891248d 77-88,93,95-97
+backend/app/core/config.py
+  s_0b31c8b65ed01e::t_9e5879cffa2048 46-49
+  s_0b31c8b65ed01e::t_7510b6a8732dcc 40-45
+backend/app/services/coverage.py
+  s_0b31c8b65ed01e::t_52707d7c3e0b12 1-130
+backend/app/core/logging.py
+  s_0b31c8b65ed01e::t_228b80d20b20da 8-23,26
+backend/tests/test_research_service.py
+  s_0b31c8b65ed01e::t_a327af9fb3cb16 74
+  s_0b31c8b65ed01e::t_ce18dd382ddd2b 142-144
+  s_0b31c8b65ed01e::t_8d67e412150a15 640,643-657,665-792
+  s_0b31c8b65ed01e::t_b1e0c81bdc8f4f 179-187,206-209,221-226
+  s_0b31c8b65ed01e::t_76ac2a5d914eb8 17,21,69,71-73,75,85,88,90-96,98,107-108,111,116,124-127,129-130,138-141,159-161,166-178,188-205,210-212,227-230,282-284
+  s_0b31c8b65ed01e::t_5414a7724e1914 145-158
+  s_0b31c8b65ed01e::t_cc31722bd0ad6c 481-639,641-642,658-664,793-856
+  s_0b31c8b65ed01e::t_76b9bd1dbbbf38 101-105,112-115,117
+  s_0b31c8b65ed01e::t_00b3f2ac827bad 70
+docs/evaluation.md
+  s_0b31c8b65ed01e::t_5d448821c7cac2 17
+  s_0b31c8b65ed01e::t_23d2c3111db29c 13,18
+  s_0b31c8b65ed01e::t_a3f7952b8e30fe 1-12,14-16,19-58,67
+  s_0b31c8b65ed01e::t_58eeb529acd712 59-66,68-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f91c58d166728d818a3c547c1974b3cba9fc2d30",
+  "prompts": {},
+  "humans": {
+    "h_c5a3d01edfee72": {
+      "author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_0b31c8b65ed01e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_e96af5feaffeEeQYdvERn5hS7F",
+        "model": "unknown"
+      },
+      "human_author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
