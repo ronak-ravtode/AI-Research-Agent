@@ -1,0 +1,18 @@
+backend/app/core/exceptions.py
+  h_c5a3d01edfee72 47-51
+backend/app/database/database.py
+  h_c5a3d01edfee72 45-46
+backend/app/services/report.py
+  h_c5a3d01edfee72 18,196-198,247-249
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e5aa2dce437f7881913da53ff7300c63d1137264",
+  "prompts": {},
+  "humans": {
+    "h_c5a3d01edfee72": {
+      "author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
