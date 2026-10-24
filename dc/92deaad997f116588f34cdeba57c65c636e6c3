@@ -1,0 +1,14 @@
+frontend/src/components/ResearchReport.tsx
+  h_c5a3d01edfee72 90-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dc92deaad997f116588f34cdeba57c65c636e6c3",
+  "prompts": {},
+  "humans": {
+    "h_c5a3d01edfee72": {
+      "author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
