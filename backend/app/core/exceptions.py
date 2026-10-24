@@ -44,6 +44,11 @@ class ReportGenerationError(ResearchRunError):
     error_code = "REPORT_ERROR"
 
 
+class RateLimitError(ResearchRunError):
+    user_message = "Rate limit reached on the AI model provider. Please wait a few moments before trying again."
+    error_code = "RATE_LIMIT_ERROR"
+
+
 class ConfigurationError(ResearchRunError):
     user_message = "The server is not configured correctly. Please contact the administrator."
     error_code = "CONFIG_ERROR"

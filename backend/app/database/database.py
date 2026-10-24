@@ -42,6 +42,8 @@ def _get_engine():
         _engine = create_async_engine(
             db_url,
             echo=settings.SQL_ECHO,
+            pool_pre_ping=True,
+            pool_recycle=300,
             # Fail fast instead of hanging a request on an unreachable cloud database.
             connect_args=_connect_args(db_url),
         )

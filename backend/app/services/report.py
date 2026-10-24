@@ -15,7 +15,7 @@ import re
 from dataclasses import dataclass
 
 from app.core.config import get_settings
-from app.core.exceptions import ReportGenerationError
+from app.core.exceptions import RateLimitError, ReportGenerationError
 from app.core.logging import logger
 from app.services.extraction import RetrievedSource
 from app.services.llm import llm_service
@@ -193,6 +193,9 @@ class ReportService:
                 max_tokens=4096,
             )
         except Exception as exc:
+            msg = str(exc).lower()
+            if "rate limit" in msg or "429" in msg or "tokens per day" in msg:
+                raise RateLimitError(detail=f"llm rate limit: {exc}") from exc
             raise ReportGenerationError(detail=f"llm generation failed: {exc}") from exc
 
         body = (body or "").strip()
@@ -241,6 +244,9 @@ class ReportService:
                 max_tokens=4096,
             )
         except Exception as exc:
+            msg = str(exc).lower()
+            if "rate limit" in msg or "429" in msg or "tokens per day" in msg:
+                raise RateLimitError(detail=f"llm rate limit: {exc}") from exc
             raise ReportGenerationError(detail=f"llm revision failed: {exc}") from exc
 
         rewritten = (rewritten or "").strip()
