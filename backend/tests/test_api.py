@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -72,6 +72,127 @@ def test_post_strips_whitespace(client):
         json={"query": "    What are the main risks of generative AI?    "},
     )
     assert response.status_code == 200
+
+
+async def test_post_creates_a_followup_with_parent_context(
+    client, db_session, monkeypatch
+):
+    from app.database.models import ResearchSession
+    from app.api import research as research_api
+
+    async def no_background(_research_id):
+        return None
+
+    monkeypatch.setattr(research_api, "_run_in_background", no_background)
+
+    parent = ResearchSession(
+        id=uuid4(), query="Parent question about risks", status="completed"
+    )
+    db_session.add(parent)
+    await db_session.commit()
+
+    response = client.post(
+        "/api/research",
+        json={
+            "query": "What about privacy specifically?",
+            "parent_research_id": str(parent.id),
+        },
+    )
+
+    assert response.status_code == 200
+    research_id = response.json()["research_id"]
+    child = await db_session.get(ResearchSession, UUID(research_id))
+    assert child is not None
+    assert child.parent_session_id == parent.id
+
+
+def test_post_rejects_unknown_parent(client):
+    response = client.post(
+        "/api/research",
+        json={"query": "A follow-up question here", "parent_research_id": str(uuid4())},
+    )
+    assert response.status_code == 404
+
+
+def test_post_rejects_malformed_parent(client):
+    response = client.post(
+        "/api/research",
+        json={"query": "A follow-up question here", "parent_research_id": "not-a-uuid"},
+    )
+    assert response.status_code == 400
+
+
+async def test_post_rejects_unfinished_parent(client, db_session):
+    from app.database.models import ResearchSession
+
+    parent = ResearchSession(
+        id=uuid4(), query="Still running question", status="running"
+    )
+    db_session.add(parent)
+    await db_session.commit()
+
+    response = client.post(
+        "/api/research",
+        json={"query": "A follow-up question here", "parent_research_id": str(parent.id)},
+    )
+    assert response.status_code == 400
+
+
+async def test_status_includes_plan_and_parent(client, db_session):
+    from app.database.models import ResearchSession
+
+    parent = ResearchSession(
+        id=uuid4(), query="The earlier question", status="completed"
+    )
+    child = ResearchSession(
+        id=uuid4(),
+        query="The follow-up question",
+        status="completed",
+        parent_session_id=parent.id,
+        planned_queries='["alpha query", "beta query"]',
+    )
+    db_session.add_all([parent, child])
+    await db_session.commit()
+
+    body = client.get(f"/api/research/{child.id}").json()
+    assert body["planned_queries"] == ["alpha query", "beta query"]
+    assert body["parent_research_id"] == str(parent.id)
+
+
+async def test_status_tolerates_malformed_plan_json(client, db_session):
+    from app.database.models import ResearchSession
+
+    session = ResearchSession(
+        id=uuid4(),
+        query="A question with a bad plan",
+        status="completed",
+        planned_queries="not json",
+    )
+    db_session.add(session)
+    await db_session.commit()
+
+    body = client.get(f"/api/research/{session.id}").json()
+    assert body["planned_queries"] == []
+
+
+async def test_history_includes_parent_link(client, db_session):
+    from app.database.models import ResearchSession
+
+    parent = ResearchSession(
+        id=uuid4(), query="History parent question", status="completed"
+    )
+    child = ResearchSession(
+        id=uuid4(),
+        query="History follow-up question",
+        status="completed",
+        parent_session_id=parent.id,
+    )
+    db_session.add_all([parent, child])
+    await db_session.commit()
+
+    body = client.get("/api/history").json()
+    mine = [h for h in body["history"] if h["research_id"] == str(child.id)]
+    assert mine[0]["parent_research_id"] == str(parent.id)
 
 
 async def test_status_reports_stage_and_message(client, db_session):

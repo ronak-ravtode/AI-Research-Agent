@@ -121,7 +121,7 @@ export default function History({
       </div>
 
       {/* Scrollable List */}
-      <div className="flex-1 overflow-y-auto px-1 space-y-1">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-1 space-y-1">
         {error ? (
           <div className="rounded-lg border border-red-900/50 bg-red-950/40 p-3 text-xs text-red-300">
             {error}
@@ -152,23 +152,39 @@ export default function History({
                         : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200"
                     }`}
                   >
-                    <span className="line-clamp-2 w-full text-[13px] leading-snug">
-                      {item.query}
-                    </span>
-                    <span className="mt-1.5 flex w-full items-center gap-2 text-[11px] text-zinc-400">
-                      <span className="flex items-center gap-1.5">
+                    <div className="flex w-full items-start gap-1.5">
+                      {item.parent_research_id && (
+                        <span className="mt-0.5 shrink-0 text-blue-400" title="Follow-up">
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h10a5 5 0 015 5v3m0 0l-3-3m3 3l3-3" />
+                          </svg>
+                        </span>
+                      )}
+                      <span className="line-clamp-2 flex-1 text-[13px] leading-snug">
+                        {item.query}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex w-full items-center gap-1.5 text-[11px] text-zinc-400">
+                      <span className="flex shrink-0 items-center gap-1.5">
                         <StatusDot status={item.status} />
                         <span className="capitalize">{item.status}</span>
                       </span>
+                      {item.parent_research_id && (
+                        <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded bg-blue-500/20 px-1.5 py-0.5 text-[10px] font-medium text-blue-300 ring-1 ring-inset ring-blue-500/30">
+                          Follow-up
+                        </span>
+                      )}
                       {item.source_count > 0 && (
-                        <span>· {item.source_count} sources</span>
+                        <span className="shrink-0 text-zinc-500">
+                          · {item.source_count} {item.source_count === 1 ? "source" : "sources"}
+                        </span>
                       )}
                       {item.created_at && (
-                        <span className="ml-auto text-zinc-400">
+                        <span className="ml-auto shrink-0 pl-1 text-[10px] text-zinc-500">
                           {formatRelativeDate(item.created_at)}
                         </span>
                       )}
-                    </span>
+                    </div>
                   </button>
                 </li>
               );

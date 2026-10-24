@@ -5,8 +5,25 @@ from datetime import datetime, timezone
 from typing import Any
 
 
+def _console() -> Any:
+    """UTF-8-safe stdout.
+
+    On Windows the default console codec is cp1252; agent messages legitimately
+    contain characters like the non‑breaking hyphen, which would raise
+    UnicodeEncodeError inside logging (it swallows record write failures and
+    spams the log). Reconfiguring stdout to UTF-8 with a replacement fallback
+    keeps every message printable.
+    """
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass  # non-text or already-redirected streams; keep the current one
+    return sys.stdout
+
+
 class StructuredLogger:
     def __init__(self, name: str):
+        _console()
         self.logger = logging.getLogger(name)
         if not self.logger.handlers:
             handler = logging.StreamHandler(sys.stdout)

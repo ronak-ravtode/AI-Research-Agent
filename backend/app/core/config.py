@@ -37,6 +37,16 @@ class Settings(BaseSettings):
     MAX_SOURCE_CHARS: int = 6000
     MAX_TOTAL_SOURCE_CHARS: int = 20000
 
+    # Adaptive research loop. One round means the agent may search once more after its
+    # first coverage check; two allows one further refinement.
+    MAX_AGENT_ITERATIONS: int = 2
+    MAX_CONTEXT_SOURCES: int = 3
+    MAX_CONTEXT_CHARS: int = 6000
+
+    # Verifier→writer negotiation: how many times a revised verdict may be sent back
+    # to the writer before the verifier's own edit is shipped.
+    MAX_REWRITE_ROUNDS: int = 1
+
     def missing_required_keys(self) -> list[str]:
         """Names of required keys that are still blank. Logged, never returned to a client."""
         return [name for name in REQUIRED_KEYS if not getattr(self, name, "").strip()]

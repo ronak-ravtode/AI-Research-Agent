@@ -18,19 +18,21 @@ def _normalize_db_url(url: str) -> str:
 
 
 def _connect_args(db_url: str) -> dict:
-    """SSL settings for asyncpg.
+    """Connection settings for asyncpg or SQLite.
 
     asyncpg does not read `?sslmode=` from the URL the way psycopg2 does, so a hosted
     database that requires TLS (Supabase does) would otherwise negotiate without it.
     An explicit `?sslmode=require` is honoured, and any Supabase host gets SSL anyway.
     """
+    if "sqlite" in db_url:
+        return {"check_same_thread": False}
+
     host = db_url.split("@")[-1].split("/")[0].split(":")[0].lower()
     query = db_url.partition("?")[2].lower()
-    if "sslmode=disable" in query:
-        return {}
-    if "supabase" in host or "sslmode=require" in query:
-        return {"ssl": "require"}
-    return {}
+    args: dict = {"timeout": 10, "command_timeout": 30}
+    if "sslmode=disable" not in query and ("supabase" in host or "sslmode=require" in query):
+        args["ssl"] = "require"
+    return args
 
 
 def _get_engine():
@@ -41,7 +43,7 @@ def _get_engine():
             db_url,
             echo=settings.SQL_ECHO,
             # Fail fast instead of hanging a request on an unreachable cloud database.
-            connect_args={**_connect_args(db_url), "timeout": 10, "command_timeout": 30},
+            connect_args=_connect_args(db_url),
         )
     return _engine
 

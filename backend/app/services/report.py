@@ -139,10 +139,31 @@ def build_reference_list(sources: list[RetrievedSource]) -> str:
     return "\n".join(lines)
 
 
+MAX_PRIOR_CONTEXT_CHARS = 6000
+
+
+def _prepare_prior_context(text: str | None) -> str:
+    """Keep prior research as background only, with its old citation numbers removed.
+
+    A previous answer can legitimately contain `[2]` pointing at a source list that no
+    longer exists in this run. Carrying that marker into the new prompt invites the model
+    to reuse a number that now points somewhere else, so the brackets are stripped.
+    """
+    if not text:
+        return ""
+    cleaned = CITATION_RE.sub("", text)
+    cleaned = "\n".join(line.rstrip() for line in cleaned.splitlines()).strip()
+    return cleaned[:MAX_PRIOR_CONTEXT_CHARS]
+
+
 class ReportService:
-    async def write_report(
-        self, question: str, sources: list[RetrievedSource]
-    ) -> ReportResult:
+    async def write_draft(
+        self,
+        question: str,
+        sources: list[RetrievedSource],
+        prior_context: str | None = None,
+    ) -> str:
+        """Write the body only. References are never part of the model's output."""
         if not sources:
             raise ReportGenerationError(detail="no sources to write from")
 
@@ -150,9 +171,19 @@ class ReportService:
         if not material.strip():
             raise ReportGenerationError(detail="source material was empty")
 
+        context = _prepare_prior_context(prior_context)
+        context_block = (
+            "Prior research context (background only; do not cite it and do not reuse "
+            "its citation numbers):\n"
+            f"{context}\n\n"
+            if context
+            else ""
+        )
+
         try:
             body = await llm_service.generate(
                 prompt=(
+                    f"{context_block}"
                     f"Research question:\n{question}\n\n"
                     f"Source material:\n\n{material}\n\n"
                     "Write the answer now. Cite with [n] square brackets."
@@ -168,12 +199,73 @@ class ReportService:
         if not body:
             raise ReportGenerationError(detail="model returned an empty answer")
 
-        body = validate_citations(body, len(sources))
+        return validate_citations(body, len(sources))
 
+    async def revise(
+        self,
+        question: str,
+        body: str,
+        sources: list[RetrievedSource],
+        feedback: str = "",
+    ) -> str:
+        """Rewrite a draft the verifier flagged, keeping only supported claims.
+
+        This is the writer's move in the verifier→writer negotiation: the critic's
+        verdict (its edited body + note) is fed back as guidance, and the writer
+        rewrites rather than the orchestrator shipping a critic-authored text.
+        Mirrors write_draft's error contract: empty output is an error.
+        """
+        if not sources:
+            raise ReportGenerationError(detail="no sources to write from")
+
+        material = build_source_material(sources)
+        if not material.strip():
+            raise ReportGenerationError(detail="source material was empty")
+
+        note = " ".join((feedback or "").split()).strip()
+        try:
+            rewritten = await llm_service.generate(
+                prompt=(
+                    f"Research question:\n{question}\n\n"
+                    f"Current draft:\n\n{body}\n\n"
+                    f"Numbered source material:\n\n{material}\n\n"
+                    f"Reviewer verdict: {note or ('some claims were unsupported and were '
+                    'removed or qualified in this draft.')}\n\n"
+                    "Rewrite the answer: keep every claim the sources support with its "
+                    "[n] citation, remove or explicitly qualify anything the sources do "
+                    "not establish, and keep the same Markdown structure. Never add new "
+                    "facts, sources, URLs, or a reference list."
+                ),
+                system_prompt=SYSTEM_PROMPT,
+                temperature=0.3,
+                max_tokens=4096,
+            )
+        except Exception as exc:
+            raise ReportGenerationError(detail=f"llm revision failed: {exc}") from exc
+
+        rewritten = (rewritten or "").strip()
+        if not rewritten:
+            raise ReportGenerationError(detail="model returned an empty revision")
+
+        return validate_citations(rewritten, len(sources))
+
+    def finalize(
+        self,
+        body: str,
+        sources: list[RetrievedSource],
+        question: str = "",
+    ) -> ReportResult:
+        """Attach a reference list built from stored sources, never from model output."""
+        body = validate_citations(body, len(sources))
         references = build_reference_list(sources)
         answer = f"{body}\n\n## References\n\n{references}\n"
-
         return ReportResult(title=_derive_title(question), answer_markdown=answer)
+
+    async def write_report(
+        self, question: str, sources: list[RetrievedSource]
+    ) -> ReportResult:
+        body = await self.write_draft(question, sources)
+        return self.finalize(body, sources, question)
 
 
 def _derive_title(question: str) -> str:

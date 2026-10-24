@@ -11,6 +11,7 @@ user-facing message, and logs the real cause server-side. Nothing is swallowed a
 reported as success.
 """
 
+import json
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -29,15 +30,19 @@ from app.database.models import (
     ResearchSession,
     Source,
 )
+from app.services.coverage import coverage_service
 from app.services.extraction import RetrievedSource, extraction_service
 from app.services.planning import planning_service
 from app.services.report import report_service
-from app.services.search import SearchResult, search_service
+from app.services.search import SearchResult, normalize_url, search_service
+from app.services.verification import VerificationResult, verification_service
 
 STAGE_PLAN = "planning"
 STAGE_SEARCH = "searching"
 STAGE_EXTRACT = "reading"
+STAGE_DECIDE = "deciding"
 STAGE_WRITE = "writing"
+STAGE_VERIFY = "verifying"
 STAGE_DONE = "complete"
 
 
@@ -68,14 +73,16 @@ class ResearchService:
             await self._fail(session_id, exc)
 
     async def _execute(self, session: ResearchSession) -> None:
-        """The four stages. Failures propagate to `run`, which records them."""
+        """The adaptive agent loop. Failures propagate to `run`, which records them."""
         settings = get_settings()
         query = session.query.strip()
 
-        await self._stage(session, STAGE_PLAN, "Breaking the question into search queries")
+        memory_sources, prior_context = await self._load_memory(session)
 
-        queries = await planning_service.plan_queries(query)
-        logger.info("Planned search queries", data={"count": len(queries)})
+        await self._stage(session, STAGE_PLAN, "Breaking the question into search queries")
+        queries = await planning_service.plan_queries(query, context=prior_context)
+        session.planned_queries = json.dumps(queries)
+        await self._stage(session, STAGE_PLAN, f"Planned queries: {'; '.join(queries)}")
 
         await self._stage(session, STAGE_SEARCH, "Searching the web with Tavily")
         results = await search_service.search(queries)
@@ -96,8 +103,202 @@ class ResearchService:
             f"Read {sum(1 for s in sources if s.content)} of {len(sources)} pages",
         )
 
+        results, sources = await self._broaden_if_shallow(session, query, results, sources)
+
+        if memory_sources:
+            sources = self._merge_sources(memory_sources, sources)
+            await self._stage(
+                session,
+                STAGE_EXTRACT,
+                f"Reused {len(memory_sources)} source(s) from earlier research",
+            )
+
+        # Adaptive loop: ask a reviewer whether the evidence is enough; follow up
+        # at most MAX_AGENT_ITERATIONS times.
+        tried_queries = list(queries)
+        for _ in range(settings.MAX_AGENT_ITERATIONS):
+            await self._stage(
+                session, STAGE_DECIDE, "Checking whether the evidence is sufficient"
+            )
+            decision = await coverage_service.assess(query, sources, tried_queries)
+            if decision.sufficient:
+                await self._stage(session, STAGE_DECIDE, f"Evidence sufficient: {decision.reason}")
+                break
+            await self._stage(session, STAGE_DECIDE, f"Evidence gap: {decision.reason}")
+
+            # Re-invoke the planner with the gap as feedback. The reviewer's own
+            # suggested queries are the fallback when re-planning yields nothing new.
+            followup_context = (
+                "Queries already searched:\n"
+                + "\n".join(f"- {q}" for q in tried_queries)
+                + f"\n\nThe evidence reviewer found this gap: {decision.reason}"
+            )
+            if decision.followup_queries:
+                followup_context += (
+                    "\nReviewer suggested: " + "; ".join(decision.followup_queries)
+                )
+            followup_context += (
+                "\n\nPropose new short web-search queries targeting this gap. "
+                "Exclude every already-tried query."
+            )
+            replanned: list[str] = []
+            try:
+                replanned = await planning_service.plan_queries(
+                    query, context=followup_context
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Replanning failed; using the reviewer's follow-up queries",
+                    data={"error": type(exc).__name__},
+                )
+            tried_lower = {q.lower() for q in tried_queries}
+            new_queries = [q for q in replanned if q and q.lower() not in tried_lower]
+            if not new_queries:
+                new_queries = [
+                    q
+                    for q in decision.followup_queries
+                    if q.lower() not in tried_lower
+                ]
+            new_queries = new_queries[: settings.MAX_SEARCH_QUERIES]
+            if not new_queries:
+                await self._stage(
+                    session,
+                    STAGE_DECIDE,
+                    f"{decision.reason} No new query was proposed.",
+                )
+                break
+            tried_queries.extend(new_queries)
+            await self._stage(
+                session,
+                STAGE_SEARCH,
+                "Following up on missing evidence: " + "; ".join(new_queries),
+            )
+            try:
+                more_results = await search_service.search(new_queries)
+            except Exception as exc:
+                logger.warning(
+                    "Follow-up search failed",
+                    data={"error": type(exc).__name__},
+                )
+                await self._stage(
+                    session,
+                    STAGE_DECIDE,
+                    "Follow-up search failed; continuing with the available evidence.",
+                )
+                break
+            fresh = self._only_new_results(results, more_results)
+            if not fresh:
+                await self._stage(
+                    session,
+                    STAGE_DECIDE,
+                    "Follow-up search found nothing new; continuing with the available evidence.",
+                )
+                break
+            results.extend(fresh)
+            await self._stage(
+                session, STAGE_EXTRACT, f"Reading {len(fresh)} additional pages"
+            )
+            try:
+                more_sources = await extraction_service.extract(fresh)
+            except Exception as exc:
+                logger.warning(
+                    "Follow-up extraction failed",
+                    data={"error": type(exc).__name__},
+                )
+                await self._stage(
+                    session,
+                    STAGE_EXTRACT,
+                    "Additional pages could not be read; continuing with the available evidence.",
+                )
+                break
+            sources = self._merge_sources(sources, more_sources)
+
         await self._stage(session, STAGE_WRITE, "Preparing the cited answer")
-        report = await report_service.write_report(query, sources)
+        draft = await report_service.write_draft(
+            query, sources, prior_context=prior_context
+        )
+
+        await self._stage(
+            session, STAGE_VERIFY, "Checking claims against the retrieved sources"
+        )
+        verification = None
+        try:
+            verification = await verification_service.verify(query, draft, sources)
+        except Exception as exc:
+            logger.warning(
+                "Verification step failed; keeping the draft",
+                data={"error": type(exc).__name__},
+            )
+            await self._stage(
+                session,
+                STAGE_VERIFY,
+                "Verification unavailable; keeping the draft as written.",
+            )
+        if verification is not None:
+            if verification.revised:
+                message = (
+                    f"Verified claims; removed or qualified "
+                    f"{verification.removed_claims} unsupported claim(s)."
+                )
+            else:
+                message = f"Verification complete: {verification.note}"
+            await self._stage(session, STAGE_VERIFY, message)
+
+            # Verifier→writer negotiation: a flagged draft goes back to the writer
+            # for a rewrite, then the rewrite is verified again. Bounded by
+            # MAX_REWRITE_ROUNDS; when the budget is out, the verifier's own edit ships.
+            rewrite_round = 0
+            while verification.revised and rewrite_round < settings.MAX_REWRITE_ROUNDS:
+                rewrite_round += 1
+                await self._stage(
+                    session,
+                    STAGE_WRITE,
+                    f"Rewriting after verifier feedback: {verification.note}",
+                )
+                rewritten = None
+                try:
+                    rewritten = await report_service.revise(
+                        query,
+                        verification.body,
+                        sources,
+                        feedback=verification.note,
+                    )
+                except Exception as exc:
+                    logger.warning(
+                        "Writer revision failed; shipping the verifier's edit",
+                        data={"error": type(exc).__name__},
+                    )
+                    break
+                if not rewritten.strip():
+                    break
+                await self._stage(
+                    session, STAGE_VERIFY, "Re-verifying the rewritten answer"
+                )
+                try:
+                    verification = await verification_service.verify(
+                        query, rewritten, sources
+                    )
+                except Exception as exc:
+                    logger.warning(
+                        "Re-verification failed; shipping the rewrite",
+                        data={"error": type(exc).__name__},
+                    )
+                    verification = VerificationResult(
+                        body=rewritten,
+                        revised=False,
+                        note="Re-verification unavailable; the rewrite is shipped.",
+                    )
+                if verification.revised:
+                    message = (
+                        f"Re-verification still found gaps; removed or qualified "
+                        f"{verification.removed_claims} unsupported claim(s)."
+                    )
+                else:
+                    message = f"Re-verification complete: {verification.note}"
+                await self._stage(session, STAGE_VERIFY, message)
+
+        body = verification.body if verification is not None else draft
+        report = report_service.finalize(body, sources, query)
 
         # Sources are persisted before the report so a report can never reference a
         # source that is not in the database.
@@ -121,6 +322,126 @@ class ResearchService:
             "Research completed",
             data={"session_id": str(session.id), "sources": len(stored)},
         )
+
+    async def _load_memory(
+        self, session: ResearchSession
+    ) -> tuple[list[RetrievedSource], str | None]:
+        """Pull reusable context from a completed parent session, if any."""
+        if session.parent_session_id is None:
+            return [], None
+        parent = await self._load(session.parent_session_id)
+        if parent is None or parent.status != STATUS_COMPLETED:
+            return [], None
+
+        settings = get_settings()
+        sources: list[RetrievedSource] = []
+        if settings.MAX_CONTEXT_SOURCES > 0:
+            rows = await self.db.execute(
+                select(Source)
+                .where(Source.session_id == parent.id)
+                .order_by(Source.search_score.desc().nullslast(), Source.created_at)
+                .limit(settings.MAX_CONTEXT_SOURCES)
+            )
+            for row in rows.scalars():
+                sources.append(
+                    RetrievedSource(
+                        url=row.url,
+                        domain=row.domain,
+                        title=row.title,
+                        content=row.content or "",
+                        snippet=row.snippet,
+                        source_type=row.source_type,
+                        retrieval_method=row.retrieval_method,
+                        search_score=row.search_score or 0.0,
+                    )
+                )
+
+        report = (
+            await self.db.execute(select(Report).where(Report.session_id == parent.id))
+        ).scalar_one_or_none()
+
+        parts: list[str] = []
+        if parent.query:
+            parts.append(f"Previous question: {parent.query}")
+        if report is not None:
+            body = report.answer_markdown.split("## References")[0].strip()
+            body = body[: settings.MAX_CONTEXT_CHARS]
+            if body:
+                parts.append(f"Previous answer:\n{body}")
+        context = "\n\n".join(parts).strip() or None
+        return sources, context
+
+    def _only_new_results(
+        self, existing: list[SearchResult], incoming: list[SearchResult]
+    ) -> list[SearchResult]:
+        seen = {normalize_url(r.url) or r.url for r in existing}
+        fresh: list[SearchResult] = []
+        for item in incoming:
+            key = normalize_url(item.url) or item.url
+            if key not in seen:
+                seen.add(key)
+                fresh.append(item)
+        return fresh
+
+    def _merge_sources(
+        self,
+        *groups: list[RetrievedSource],
+        limit: int | None = None,
+    ) -> list[RetrievedSource]:
+        """Merge source lists, deduping by URL and keeping the richest copy."""
+        best: dict[str, RetrievedSource] = {}
+        order: list[str] = []
+        for group in groups:
+            for source in group:
+                key = normalize_url(source.url) or source.url.lower()
+                if key not in best:
+                    best[key] = source
+                    order.append(key)
+                elif len(source.content) > len(best[key].content):
+                    best[key] = source
+        merged = [best[key] for key in order]
+        if limit is not None:
+            merged = merged[:limit]
+        return merged
+
+    async def _broaden_if_shallow(
+        self,
+        session: ResearchSession,
+        query: str,
+        results: list[SearchResult],
+        sources: list[RetrievedSource],
+    ) -> tuple[list[SearchResult], list[RetrievedSource]]:
+        """Second fallback: when extraction left us with snippet-only pages,
+        search the original question once more and try to read fresh URLs."""
+        if sum(1 for s in sources if s.content.strip()) >= 2:
+            return results, sources
+        try:
+            broader = await search_service.search([query])
+        except Exception as exc:
+            logger.warning(
+                "Shallow-evidence fallback search failed",
+                data={"error": type(exc).__name__},
+            )
+            return results, sources
+        fresh = self._only_new_results(results, broader)
+        if not fresh:
+            return results, sources
+        await self._stage(
+            session,
+            STAGE_SEARCH,
+            f"Only snippets so far; found {len(fresh)} more sources",
+        )
+        try:
+            more = await extraction_service.extract(fresh)
+        except Exception as exc:
+            logger.warning(
+                "Shallow-evidence fallback extraction failed",
+                data={"error": type(exc).__name__},
+            )
+            return results, sources
+        results = results + fresh
+        sources = self._merge_sources(sources, more)
+        return results, sources
 
     async def _broaden_if_thin(
         self, query: str, results: list[SearchResult]

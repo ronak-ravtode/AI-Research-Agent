@@ -56,11 +56,19 @@ async function readError(response: Response): Promise<string> {
   return `Request failed (${response.status})`;
 }
 
-export function startResearch(query: string): Promise<StartResearchResponse> {
+/** `parentResearchId` turns the request into a follow-up that reuses
+ * the earlier run's memory (question, answer, best sources). */
+export function startResearch(
+  query: string,
+  parentResearchId?: string,
+): Promise<StartResearchResponse> {
   return request<StartResearchResponse>("/api/research", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query }),
+    body: JSON.stringify({
+      query,
+      ...(parentResearchId ? { parent_research_id: parentResearchId } : {}),
+    }),
   });
 }
 

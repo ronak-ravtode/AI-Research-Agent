@@ -14,6 +14,8 @@ SYSTEM_PROMPT = (
     "Reply with JSON only: {\"queries\": [\"...\", \"...\"]}. "
     "Produce between 2 and 4 short queries. "
     "Cover distinct angles of the question rather than repeating it. "
+    "If the context describes an evidence gap or lists already-searched queries, "
+    "propose NEW queries targeting that gap and do not repeat the tried ones. "
     "Do not include quotes, citations, or commentary."
 )
 
@@ -40,12 +42,18 @@ class PlanningService:
         settings = get_settings()
         self.max_queries = settings.MAX_SEARCH_QUERIES
 
-    async def plan_queries(self, question: str) -> list[str]:
-        """Return 2–4 queries, degrading to the original question on any problem."""
+    async def plan_queries(self, question: str, context: str | None = None) -> list[str]:
+        """Return 2–4 queries, degrading to the original question on any problem.
+
+        `context` carries optional steering from the orchestrator — prior research
+        memory on the first call, or the reviewer's evidence-gap feedback on a
+        mid-loop re-planning call.
+        """
         question = question.strip()
+        context_block = f"Context:\n{context.strip()}\n\n" if context and context.strip() else ""
         try:
             payload = await llm_service.structured_generate(
-                prompt=f"Research question: {question}",
+                prompt=f"{context_block}Research question: {question}",
                 system_prompt=SYSTEM_PROMPT,
                 temperature=0.2,
                 max_tokens=300,

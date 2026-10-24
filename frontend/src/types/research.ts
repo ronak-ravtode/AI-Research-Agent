@@ -1,6 +1,14 @@
 export type ResearchStatus = "queued" | "running" | "completed" | "failed";
 
-export type Stage = "queued" | "planning" | "searching" | "reading" | "writing" | "complete";
+export type Stage =
+  | "queued"
+  | "planning"
+  | "searching"
+  | "reading"
+  | "deciding"
+  | "writing"
+  | "verifying"
+  | "complete";
 
 export interface StartResearchResponse {
   research_id: string;
@@ -14,6 +22,8 @@ export interface ResearchStatusResponse {
   current_stage: Stage | null;
   progress_message: string | null;
   error_message: string | null;
+  planned_queries: string[] | null;
+  parent_research_id: string | null;
   report_id: string | null;
   report_title: string | null;
   report_markdown: string | null;
@@ -45,6 +55,7 @@ export interface HistoryItem {
   status: ResearchStatus;
   source_count: number;
   has_report: boolean;
+  parent_research_id: string | null;
   created_at: string | null;
   completed_at: string | null;
 }

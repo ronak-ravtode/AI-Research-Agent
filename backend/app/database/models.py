@@ -36,6 +36,15 @@ class ResearchSession(Base):
     id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     query = Column(Text, nullable=False)
     status = Column(String(20), nullable=False, default=STATUS_QUEUED)
+    parent_session_id = Column(
+        Uuid(as_uuid=True),
+        ForeignKey("research_sessions.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    # JSON array of the queries the planner produced, kept so a reopened session can show
+    # what the agent decided to search and in what order.
+    planned_queries = Column(Text, nullable=True)
     current_stage = Column(String(50), nullable=True)
     progress_message = Column(Text, nullable=True)
     error_message = Column(Text, nullable=True)

@@ -225,3 +225,55 @@ def test_all_citation_forms_together():
     out = validate_citations("A [1] B 【2†Lx】 C 【3】 D [4]", 4)
     assert "[1]" in out and "[2]" in out and "[3]" in out and "[4]" in out
 
+
+# ---------------------------------------------------------------- draft / finalize
+
+
+async def test_write_draft_returns_body_only(monkeypatch):
+    fake = _FakeLLM("## Answer\nA draft [1].")
+    monkeypatch.setattr("app.services.report.llm_service", fake)
+
+    body = await report_service.write_draft("q?", [_source(1)])
+
+    assert body.startswith("## Answer")
+    assert "## References" not in body
+    assert "[1]" in body
+
+
+async def test_write_draft_accepts_prior_context_without_its_citations(monkeypatch):
+    fake = _FakeLLM("## Answer\nFollow-up answer [1].")
+    monkeypatch.setattr("app.services.report.llm_service", fake)
+
+    await report_service.write_draft(
+        "What about privacy?",
+        [_source(1)],
+        prior_context="Previous question: What are the risks?\nPrevious answer: Risk A [9].",
+    )
+
+    prompt = fake.calls[0][0]
+    assert "Previous question: What are the risks?" in prompt
+    assert "Prior research context" in prompt
+    assert "[9]" not in prompt
+
+
+def test_finalize_builds_references_from_sources():
+    result = report_service.finalize("## Answer\nA claim [1].", [_source(1), _source(2)])
+
+    assert result.answer_markdown.startswith("## Answer")
+    assert "## References" in result.answer_markdown
+    assert "https://site1.com/page" in result.answer_markdown
+    assert "https://site2.com/page" in result.answer_markdown
+
+
+def test_finalize_removes_out_of_range_citations():
+    result = report_service.finalize("Real [1]. Invented [99].", [_source(1)])
+    assert "[1]" in result.answer_markdown
+    assert "[99]" not in result.answer_markdown
+
+
+def test_prior_context_is_optional_and_kept_bounded():
+    from app.services.report import _prepare_prior_context
+
+    assert _prepare_prior_context(None) == ""
+    long = "x" * 20000
+    assert len(_prepare_prior_context(long)) <= 6000

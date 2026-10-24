@@ -9,11 +9,21 @@ const STAGE_LABEL: Record<Stage, string> = {
   planning: "Planning the search",
   searching: "Searching the web",
   reading: "Reading sources",
+  deciding: "Judging the evidence",
   writing: "Writing the answer",
+  verifying: "Verifying claims",
   complete: "Finished",
 };
 
-const SPINNER_STAGES: Stage[] = ["queued", "planning", "searching", "reading", "writing"];
+const SPINNER_STAGES: Stage[] = [
+  "queued",
+  "planning",
+  "searching",
+  "reading",
+  "deciding",
+  "writing",
+  "verifying",
+];
 
 export default function ResearchProgress({
   events,

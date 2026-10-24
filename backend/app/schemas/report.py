@@ -8,6 +8,7 @@ class HistoryItem(BaseModel):
     research_id: str
     query: str
     status: str
+    parent_research_id: Optional[str] = None
     source_count: int = 0
     has_report: bool = False
     created_at: Optional[datetime] = None

@@ -160,11 +160,11 @@ export default function ResearchForm({
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-[11px] text-zinc-400">
-                {trimmed.length < MIN_LENGTH
-                  ? `Min ${MIN_LENGTH} chars`
-                  : `${query.length} / ${MAX_LENGTH}`}
-              </span>
+              {query.length >= MIN_LENGTH && (
+                <span className="text-[11px] text-zinc-400">
+                  {query.length} / {MAX_LENGTH}
+                </span>
+              )}
               <button
                 type="submit"
                 disabled={!canSubmit}

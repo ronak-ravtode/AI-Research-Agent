@@ -25,7 +25,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from sqlalchemy import select  # noqa: E402
 
 from app.core.config import get_settings  # noqa: E402
-from app.database.database import Base, _get_engine, _get_session_factory  # noqa: E402
+from app.database.database import _get_engine, _get_session_factory  # noqa: E402
+from app.database.migrations import sync_schema  # noqa: E402
 from app.database.models import (  # noqa: E402
     STATUS_COMPLETED,
     Report,
@@ -50,7 +51,11 @@ DEFAULT_QUESTIONS = [
 async def ensure_schema() -> None:
     engine = _get_engine()
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        applied = await sync_schema(conn)
+    if applied:
+        print(f"Schema synced ({len(applied)} change(s)):")
+        for line in applied:
+            print(f"  - {line}")
 
 
 async def run_one(question: str) -> dict:

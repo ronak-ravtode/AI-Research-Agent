@@ -99,6 +99,11 @@ async def get_history(db: AsyncSession = Depends(get_db_readonly)):
                 research_id=str(session.id),
                 query=session.query,
                 status=session.status,
+                parent_research_id=(
+                    str(session.parent_session_id)
+                    if session.parent_session_id
+                    else None
+                ),
                 source_count=int(source_count),
                 has_report=bool(report_count),
                 created_at=session.created_at,

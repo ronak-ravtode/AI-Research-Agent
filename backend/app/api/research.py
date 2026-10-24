@@ -10,6 +10,7 @@ from sse_starlette.sse import EventSourceResponse
 from app.core.logging import logger
 from app.database.database import get_db, get_db_readonly, _get_session_factory
 from app.database.models import (
+    STATUS_COMPLETED,
     STATUS_FAILED,
     STATUS_QUEUED,
     TERMINAL_STATUSES,
@@ -38,6 +39,19 @@ def _parse_uuid(research_id: str) -> UUID:
         raise HTTPException(status_code=400, detail="Invalid research ID format")
 
 
+def _parse_plan(raw: str | None) -> list[str]:
+    """Read the stored plan without letting a bad row break the status endpoint."""
+    if not raw:
+        return []
+    try:
+        parsed = json.loads(raw)
+    except (TypeError, ValueError):
+        return []
+    if not isinstance(parsed, list):
+        return []
+    return [item for item in parsed if isinstance(item, str)]
+
+
 async def _run_in_background(research_id: str) -> None:
     """Run the workflow on its own DB session so the request can return immediately."""
     session_factory = _get_session_factory()
@@ -60,12 +74,27 @@ async def start_research(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
+    parent: ResearchSession | None = None
+    if request.parent_research_id:
+        parent_id = _parse_uuid(request.parent_research_id)
+        parent = await db.get(ResearchSession, parent_id)
+        if parent is None:
+            raise HTTPException(status_code=404, detail="Parent research not found")
+        if parent.status != STATUS_COMPLETED:
+            raise HTTPException(
+                status_code=400,
+                detail="The parent research must be completed before a follow-up.",
+            )
+
     session = ResearchSession(
         id=uuid4(),
         query=request.query.strip(),
         status=STATUS_QUEUED,
+        parent_session_id=parent.id if parent else None,
         current_stage="queued",
-        progress_message="Queued",
+        progress_message=(
+            f"Follow-up queued for {parent.id}" if parent else "Queued"
+        ),
     )
     db.add(session)
     await db.commit()
@@ -98,6 +127,10 @@ async def get_research_status(
         current_stage=session.current_stage,
         progress_message=session.progress_message,
         error_message=session.error_message,
+        parent_research_id=(
+            str(session.parent_session_id) if session.parent_session_id else None
+        ),
+        planned_queries=_parse_plan(session.planned_queries),
         report_id=str(report.id) if report else None,
         report_title=report.title if report else None,
         report_markdown=report.answer_markdown if report else None,

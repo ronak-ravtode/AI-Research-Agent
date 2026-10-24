@@ -30,3 +30,5 @@ Thumbs.db
 
 # Logs
 *.log
+session-*.md
+*.db
