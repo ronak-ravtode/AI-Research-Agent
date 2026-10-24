@@ -87,6 +87,19 @@ export default function ResearchReport({
             p: ({ children }) => <p>{linkifyCitations(children, sources)}</p>,
             li: ({ children }) => <li>{linkifyCitations(children, sources)}</li>,
             td: ({ children }) => <td>{linkifyCitations(children, sources)}</td>,
+            a: ({ href, children, ...props }) => {
+              const isExternal = Boolean(href && /^https?:\/\//i.test(href));
+              return (
+                <a
+                  href={href}
+                  target={isExternal ? "_blank" : undefined}
+                  rel={isExternal ? "noopener noreferrer" : undefined}
+                  {...props}
+                >
+                  {children}
+                </a>
+              );
+            },
           }}
         >
           {markdown}
