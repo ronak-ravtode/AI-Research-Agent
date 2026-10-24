@@ -1,4 +1,9 @@
-export type ResearchStatus = "queued" | "running" | "completed" | "failed";
+export type ResearchStatus =
+  | "queued"
+  | "running"
+  | "completed"
+  | "failed"
+  | "cancelled";
 
 export type Stage =
   | "queued"
@@ -18,6 +23,7 @@ export interface StartResearchResponse {
 export interface ResearchStatusResponse {
   research_id: string;
   query: string;
+  display_title: string | null;
   status: ResearchStatus;
   current_stage: Stage | null;
   progress_message: string | null;
@@ -27,6 +33,11 @@ export interface ResearchStatusResponse {
   report_id: string | null;
   report_title: string | null;
   report_markdown: string | null;
+  verification_note: string | null;
+  verification_revised: boolean;
+  verification_available: boolean;
+  removed_claims: number;
+  max_iterations: number | null;
   created_at: string | null;
   updated_at: string | null;
   completed_at: string | null;
@@ -44,6 +55,12 @@ export interface Source {
   retrieved_at: string | null;
 }
 
+export interface SourceDetail extends Source {
+  content: string | null;
+  index: number;
+  total: number;
+}
+
 export interface SourceListResponse {
   sources: Source[];
   total: number;
@@ -52,6 +69,7 @@ export interface SourceListResponse {
 export interface HistoryItem {
   research_id: string;
   query: string;
+  title: string | null;
   status: ResearchStatus;
   source_count: number;
   has_report: boolean;
@@ -62,6 +80,10 @@ export interface HistoryItem {
 
 export interface HistoryResponse {
   history: HistoryItem[];
+  total: number;
+  limit: number;
+  offset: number;
+  has_more: boolean;
 }
 
 export interface ActivityEvent {
@@ -77,4 +99,22 @@ export interface CompleteEvent {
   current_stage: Stage | null;
   progress_message: string | null;
   message?: string;
+}
+
+export interface HealthResponse {
+  status: string;
+  service: string;
+  version: string;
+  environment: string;
+  providers: {
+    llm: string;
+    search: string;
+    extraction: string;
+  };
+  limits: {
+    max_agent_iterations: number;
+    max_search_results: number;
+    max_extract_sources: number;
+  };
+  configured: boolean;
 }

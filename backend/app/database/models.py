@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import (
+    Boolean,
     Column,
     DateTime,
     Float,
@@ -19,8 +20,39 @@ STATUS_QUEUED = "queued"
 STATUS_RUNNING = "running"
 STATUS_COMPLETED = "completed"
 STATUS_FAILED = "failed"
+STATUS_CANCELLED = "cancelled"
 
-TERMINAL_STATUSES = (STATUS_COMPLETED, STATUS_FAILED)
+VALID_STATUSES = (
+    STATUS_QUEUED,
+    STATUS_RUNNING,
+    STATUS_COMPLETED,
+    STATUS_FAILED,
+    STATUS_CANCELLED,
+)
+
+TERMINAL_STATUSES = (STATUS_COMPLETED, STATUS_FAILED, STATUS_CANCELLED)
+
+# A run that crashed mid-flight could leave its *stage* stored in the status column
+# (e.g. "planning"). Reading one back must never break the API contract or the UI, so
+# every status crossing a boundary is coerced through `normalize_status`.
+_LEGACY_STAGE_STATUSES = frozenset(
+    {"planning", "searching", "reading", "deciding", "writing", "verifying"}
+)
+
+
+def normalize_status(raw: str | None) -> str:
+    """Coerce any stored value into one of the five statuses the contract allows.
+
+    Unknown values are treated as `queued` rather than discarded, so a legacy row stays
+    visible and openable instead of vanishing or erroring.
+    """
+    if raw in VALID_STATUSES:
+        return raw  # type: ignore[return-value]
+    if raw == "complete":
+        return STATUS_COMPLETED
+    if raw in _LEGACY_STAGE_STATUSES:
+        return STATUS_RUNNING
+    return STATUS_QUEUED
 
 RETRIEVAL_FIRECRAWL = "firecrawl"
 RETRIEVAL_SNIPPET = "tavily_snippet"
@@ -35,7 +67,13 @@ class ResearchSession(Base):
 
     id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     query = Column(Text, nullable=False)
+    # A user-chosen name for the run. `query` always stays the real question; this only
+    # changes what the history list and library display.
+    display_title = Column(String(300), nullable=True)
     status = Column(String(20), nullable=False, default=STATUS_QUEUED)
+    # Cooperative cancellation: the API sets this, and the workflow stops at its next
+    # stage boundary. A hard kill would leave a run half-written.
+    cancel_requested = Column(Boolean, nullable=False, default=False)
     parent_session_id = Column(
         Uuid(as_uuid=True),
         ForeignKey("research_sessions.id", ondelete="SET NULL"),
@@ -48,6 +86,9 @@ class ResearchSession(Base):
     current_stage = Column(String(50), nullable=True)
     progress_message = Column(Text, nullable=True)
     error_message = Column(Text, nullable=True)
+    # The per-run depth override chosen in the UI, kept so a reopened run can say whether
+    # it was a quick or deep run.
+    max_iterations = Column(Integer, nullable=True)
     started_at = Column(DateTime(timezone=True), nullable=True)
     completed_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
@@ -115,6 +156,12 @@ class Report(Base):
     )
     title = Column(String(500), nullable=False)
     answer_markdown = Column(Text, nullable=False)
+    # What the verifier concluded about this report. Persisted so the UI can show a trust
+    # signal instead of flattening it into the activity log.
+    verification_note = Column(Text, nullable=True)
+    removed_claims = Column(Integer, nullable=False, default=0)
+    verification_revised = Column(Boolean, nullable=False, default=False)
+    verification_available = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=_utcnow)
 
     session = relationship("ResearchSession", back_populates="reports")

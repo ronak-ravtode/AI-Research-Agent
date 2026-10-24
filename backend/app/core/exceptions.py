@@ -52,3 +52,11 @@ class RateLimitError(ResearchRunError):
 class ConfigurationError(ResearchRunError):
     user_message = "The server is not configured correctly. Please contact the administrator."
     error_code = "CONFIG_ERROR"
+
+
+class ResearchCancelled(Exception):
+    """Raised inside the workflow when the user asked to stop the run.
+
+    Deliberately *not* a `ResearchRunError`: cancellation is not a failure, so it must not
+    be reported as one. `ResearchService.run` catches it and marks the run `cancelled`.
+    """

@@ -19,3 +19,9 @@ class SourceResponse(BaseModel):
 class SourceListResponse(BaseModel):
     sources: list[SourceResponse]
     total: int
+
+
+class SourceDetailResponse(SourceResponse):
+    content: Optional[str] = None
+    index: int = 1
+    total: int = 1

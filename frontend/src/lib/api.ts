@@ -1,8 +1,10 @@
 import type {
   ActivityEvent,
   CompleteEvent,
+  HealthResponse,
   HistoryResponse,
   ResearchStatusResponse,
+  SourceDetail,
   SourceListResponse,
   StartResearchResponse,
 } from "@/types/research";
@@ -56,18 +58,29 @@ async function readError(response: Response): Promise<string> {
   return `Request failed (${response.status})`;
 }
 
+export interface StartOptions {
+  parentResearchId?: string;
+  /** 0 = quick, 2 = standard (server default), 3 = deep. */
+  maxIterations?: number;
+}
+
 /** `parentResearchId` turns the request into a follow-up that reuses
  * the earlier run's memory (question, answer, best sources). */
 export function startResearch(
   query: string,
-  parentResearchId?: string,
+  options: StartOptions = {},
 ): Promise<StartResearchResponse> {
   return request<StartResearchResponse>("/api/research", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query,
-      ...(parentResearchId ? { parent_research_id: parentResearchId } : {}),
+      ...(options.parentResearchId
+        ? { parent_research_id: options.parentResearchId }
+        : {}),
+      ...(options.maxIterations !== undefined
+        ? { max_iterations: options.maxIterations }
+        : {}),
     }),
   });
 }
@@ -86,14 +99,72 @@ export function getSources(researchId: string): Promise<SourceListResponse> {
   );
 }
 
+export function getSource(
+  researchId: string,
+  sourceId: string,
+): Promise<SourceDetail> {
+  return request<SourceDetail>(
+    `/api/research/${encodeURIComponent(researchId)}/sources/${encodeURIComponent(
+      sourceId,
+    )}`,
+  );
+}
+
 export function getActivity(researchId: string): Promise<ActivityEvent[]> {
   return request<{ activity: ActivityEvent[] }>(
     `/api/research/${encodeURIComponent(researchId)}/activity`,
   ).then((body) => body.activity ?? []);
 }
 
-export function getHistory(): Promise<HistoryResponse> {
-  return request<HistoryResponse>("/api/history");
+export interface HistoryParams {
+  limit?: number;
+  offset?: number;
+  status?: string;
+  q?: string;
+}
+
+export function getHistory(params: HistoryParams = {}): Promise<HistoryResponse> {
+  const search = new URLSearchParams();
+  if (params.limit !== undefined) search.set("limit", String(params.limit));
+  if (params.offset !== undefined) search.set("offset", String(params.offset));
+  if (params.status) search.set("status", params.status);
+  if (params.q) search.set("q", params.q);
+  const query = search.toString();
+  return request<HistoryResponse>(`/api/history${query ? `?${query}` : ""}`);
+}
+
+/** Ask a live run to stop. Safe to call more than once. */
+export function cancelResearch(
+  researchId: string,
+): Promise<{ research_id: string; status: string }> {
+  return request<{ research_id: string; status: string }>(
+    `/api/research/${encodeURIComponent(researchId)}/cancel`,
+    { method: "POST" },
+  );
+}
+
+export function renameResearch(
+  researchId: string,
+  title: string | null,
+): Promise<{ research_id: string; display_title: string | null }> {
+  return request<{ research_id: string; display_title: string | null }>(
+    `/api/research/${encodeURIComponent(researchId)}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    },
+  );
+}
+
+export function deleteResearch(researchId: string): Promise<void> {
+  return request<void>(`/api/research/${encodeURIComponent(researchId)}`, {
+    method: "DELETE",
+  });
+}
+
+export function getHealth(): Promise<HealthResponse> {
+  return request<HealthResponse>("/api/health");
 }
 
 export type StreamHandlers = {

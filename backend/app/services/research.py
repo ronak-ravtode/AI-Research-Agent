@@ -12,6 +12,7 @@ reported as success.
 """
 
 import json
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -19,9 +20,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.core.exceptions import ResearchRunError
+from app.core.exceptions import ResearchCancelled, ResearchRunError
 from app.core.logging import logger
 from app.database.models import (
+    STATUS_CANCELLED,
     STATUS_COMPLETED,
     STATUS_FAILED,
     STATUS_RUNNING,
@@ -45,18 +47,36 @@ STAGE_WRITE = "writing"
 STAGE_VERIFY = "verifying"
 STAGE_DONE = "complete"
 
+# Quick / standard / deep are the three choices the UI offers. `None` means "use the
+# server's configured default", so the API's behaviour is unchanged for old clients.
+MIN_ITERATIONS = 0
+MAX_ITERATIONS = 3
+
+
+@dataclass
+class ResearchOptions:
+    """Per-run overrides. Bounded by the API before it reaches here."""
+
+    max_iterations: int | None = None
+
 
 class ResearchService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, options: ResearchOptions | None = None):
         self.db = db
+        self.options = options or ResearchOptions()
 
-    async def run(self, session_id: UUID) -> None:
+    async def run(
+        self, session_id: UUID, options: ResearchOptions | None = None
+    ) -> None:
         """Execute a full research run for an already-created session.
 
         Every failure path ends in a persisted `failed` status. Nothing is raised to the
         caller, because a background task that throws would leave the session stuck on
-        `queued` with no way for a client to discover why.
+        `queued` with no way for a client to discover why. A cancellation is a third
+        outcome: it ends the run as `cancelled`, not as a failure.
         """
+        if options is not None:
+            self.options = options
         try:
             get_settings().validate_required_keys()
             session = await self._load(session_id)
@@ -67,6 +87,8 @@ class ResearchService:
                 )
                 return
             await self._execute(session)
+        except ResearchCancelled:
+            await self._mark_cancelled(session_id)
         except ResearchRunError as exc:
             await self._fail(session_id, exc)
         except Exception as exc:
@@ -114,9 +136,16 @@ class ResearchService:
             )
 
         # Adaptive loop: ask a reviewer whether the evidence is enough; follow up
-        # at most MAX_AGENT_ITERATIONS times.
+        # at most MAX_AGENT_ITERATIONS times (or the per-run override from the UI).
+        max_iterations = (
+            self.options.max_iterations
+            if self.options.max_iterations is not None
+            else session.max_iterations
+            if session.max_iterations is not None
+            else settings.MAX_AGENT_ITERATIONS
+        )
         tried_queries = list(queries)
-        for _ in range(settings.MAX_AGENT_ITERATIONS):
+        for _ in range(max_iterations):
             await self._stage(
                 session, STAGE_DECIDE, "Checking whether the evidence is sufficient"
             )
@@ -308,6 +337,10 @@ class ResearchService:
                 session_id=session.id,
                 title=report.title,
                 answer_markdown=report.answer_markdown,
+                verification_note=verification.note if verification else None,
+                removed_claims=verification.removed_claims if verification else 0,
+                verification_revised=bool(verification.revised) if verification else False,
+                verification_available=verification is not None,
             )
         )
         session.status = STATUS_COMPLETED
@@ -493,6 +526,7 @@ class ResearchService:
     async def _stage(
         self, session: ResearchSession, stage: str, message: str
     ) -> None:
+        await self._raise_if_cancelled(session)
         session.status = STATUS_RUNNING
         session.current_stage = stage
         session.progress_message = message
@@ -501,6 +535,21 @@ class ResearchService:
         self._activity(session, stage, message)
         await self.db.commit()
         logger.info(message, data={"session_id": str(session.id), "stage": stage})
+
+    async def _raise_if_cancelled(self, session: ResearchSession) -> None:
+        """Read the cancel flag from the database, not the in-memory session.
+
+        The cancellation arrives on a different request (and therefore a different
+        session), so this row is the only shared signal. Checking at every stage boundary
+        bounds the wasted work to one stage.
+        """
+        try:
+            await self.db.refresh(session, attribute_names=["cancel_requested"])
+        except Exception:
+            # A refresh failure must not abort a healthy run; treat it as "not cancelled".
+            return
+        if session.cancel_requested:
+            raise ResearchCancelled()
 
     def _activity(
         self, session: ResearchSession, stage: str, message: str
@@ -522,6 +571,30 @@ class ResearchService:
         logger.warning(
             "Research failed", data={"session_id": str(session.id), "reason": message}
         )
+
+    async def _mark_cancelled(self, session_id: UUID) -> None:
+        """Record a user cancellation as its own terminal state, not a failure."""
+        try:
+            await self.db.rollback()
+            session = await self._load(session_id)
+            if session is None or session.status == STATUS_CANCELLED:
+                return
+            if session.status in (STATUS_COMPLETED, STATUS_FAILED):
+                return
+            session.status = STATUS_CANCELLED
+            session.current_stage = STAGE_DONE
+            session.progress_message = "Research cancelled"
+            session.error_message = None
+            session.completed_at = datetime.now(timezone.utc)
+            self._activity(session, STAGE_DONE, "Research cancelled by user")
+            await self.db.commit()
+            logger.info("Research cancelled", data={"session_id": str(session_id)})
+        except Exception:
+            logger.error(
+                "Could not persist cancellation state",
+                data={"session_id": str(session_id)},
+                exc_info=True,
+            )
 
     async def _fail(self, session_id: UUID, exc: BaseException) -> None:
         """Roll back partial work, then record a safe failure.

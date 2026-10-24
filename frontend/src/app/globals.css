@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark mode, driven by <html class="dark"> in the theme script. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-serif: "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
@@ -9,6 +12,16 @@
   color-scheme: light;
   --background: #ffffff;
   --foreground: #0f172a;
+  --scrollbar: #cbd5e1;
+  --scrollbar-hover: #94a3b8;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --scrollbar: #3f3f46;
+  --scrollbar-hover: #52525b;
 }
 
 body {
@@ -28,11 +41,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--scrollbar);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--scrollbar-hover);
 }
 
 /* Utility to hide scrollbar while preserving scroll functionality */
@@ -198,3 +211,67 @@ body {
   font-weight: 600;
   color: #0f172a;
 }
+
+/* Report typography, dark theme. */
+.dark .prose-paper {
+  color: #d4d4d8;
+}
+
+.dark .prose-paper h1,
+.dark .prose-paper h2,
+.dark .prose-paper h3,
+.dark .prose-paper strong {
+  color: #f4f4f5;
+}
+
+.dark .prose-paper h3 {
+  color: #e4e4e7;
+}
+
+.dark .prose-paper p {
+  color: #d4d4d8;
+}
+
+.dark .prose-paper a {
+  color: #7dd3fc;
+}
+
+.dark .prose-paper a:hover {
+  color: #bae6fd;
+}
+
+.dark .prose-paper blockquote {
+  border-left-color: #3f3f46;
+  color: #a1a1aa;
+}
+
+.dark .prose-paper code {
+  background: #18181b;
+  color: #e4e4e7;
+  border-color: #27272a;
+}
+
+.dark .prose-paper pre {
+  background: #000000;
+  color: #e4e4e7;
+  border: 1px solid #27272a;
+}
+
+.dark .prose-paper th,
+.dark .prose-paper td {
+  border-color: #27272a;
+}
+
+.dark .prose-paper th {
+  background: #18181b;
+  color: #f4f4f5;
+}
+
+/* Thin, quiet focus ring shared by inputs and buttons. */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px #3b82f6;
+}
+
