@@ -1,0 +1,14 @@
+frontend/.gitignore
+  h_c5a3d01edfee72 42-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b92df03d214e29f1e9118bbf12a26f17e0c9d37f",
+  "prompts": {},
+  "humans": {
+    "h_c5a3d01edfee72": {
+      "author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
