@@ -2,7 +2,9 @@ fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 pydantic>=2.9.0
 pydantic-settings>=2.5.0
-sqlalchemy>=2.0.35
+# [asyncio] pulls in greenlet, which SQLAlchemy 2.1+ no longer installs by
+# default. Without it `sqlalchemy.ext.asyncio` raises ImportError at startup.
+sqlalchemy[asyncio]>=2.0.35
 asyncpg>=0.29.0
 groq>=0.11.0
 tavily-python>=0.5.0
