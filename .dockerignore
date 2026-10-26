@@ -1,0 +1,17 @@
+# Build context is the repository root for this Dockerfile; keep it to the backend app.
+.git
+frontend
+docs
+.superpowers
+**/__pycache__
+**/*.pyc
+**/*.pyo
+backend/.venv
+backend/.env
+backend/.pytest_cache
+backend/*.log
+backend/.dockerignore
+backend/Dockerfile
+Dockerfile
+*.csv
+*.md
