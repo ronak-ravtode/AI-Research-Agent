@@ -1,0 +1,16 @@
+.dockerignore
+  h_c5a3d01edfee72 1-17
+Dockerfile
+  h_c5a3d01edfee72 1-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "27ec3481deb4ed5fc2092ddd3720bc8ccd671447",
+  "prompts": {},
+  "humans": {
+    "h_c5a3d01edfee72": {
+      "author": "ronak-ravtode <ronakravtode001@gmail.com>"
+    }
+  }
+}
